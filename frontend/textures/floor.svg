@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+  <!-- Grass floor: a 2 x 2 checker of cells with small tufts -->
+  <rect width="80" height="80" fill="#4aa83f"/>
+  <rect width="40" height="40" fill="#54b548"/>
+  <rect x="40" y="40" width="40" height="40" fill="#54b548"/>
+  <g fill="#3d9234">
+    <path d="M7 31l2-5 2 5zM12 33l2-6 2 6zM27 13l2-5 2 5z"/>
+    <path d="M47 11l2-5 2 5zM52 13l2-6 2 6zM66 29l2-5 2 5z"/>
+    <path d="M9 52l2-5 2 5zM29 70l2-5 2 5zM34 72l2-6 2 6z"/>
+    <path d="M49 68l2-5 2 5zM67 50l2-5 2 5zM72 52l2-6 2 6z"/>
+  </g>
+  <g fill="#7bd36b" opacity="0.6">
+    <circle cx="20" cy="8" r="1.2"/>
+    <circle cx="33" cy="27" r="1"/>
+    <circle cx="60" cy="20" r="1.2"/>
+    <circle cx="18" cy="61" r="1"/>
+    <circle cx="61" cy="62" r="1.2"/>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <!-- Stone block that can not be destroyed: light top-left edge, dark bottom-right edge -->
+  <rect x="1" y="1" width="38" height="38" rx="7" fill="#454c5c"/>
+  <rect x="1" y="1" width="36" height="36" rx="7" fill="#dfe3ea"/>
+  <rect x="3.5" y="3.5" width="33" height="33" rx="5.5" fill="#9aa2b2"/>
+  <rect x="8" y="8" width="24" height="24" rx="4" fill="#b1b8c6"/>
+  <path d="M8.5 32h23.5V8.5" fill="none" stroke="#7c8496" stroke-width="2" stroke-linecap="round"/>
+  <g fill="#7c8496">
+    <circle cx="6.5" cy="6.5" r="1.2"/>
+    <circle cx="33.5" cy="6.5" r="1.2"/>
+    <circle cx="6.5" cy="33.5" r="1.2"/>
+    <circle cx="33.5" cy="33.5" r="1.2"/>
+  </g>
+</svg>
