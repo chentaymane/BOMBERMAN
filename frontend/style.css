@@ -69,3 +69,45 @@ button:disabled {
   padding: 0;
   list-style: none;
 }
+
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* Chat */
+.chat {
+  width: 280px;
+  height: 420px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #2a2a3d;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.messages {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  word-break: break-word;
+}
+
+.chat form {
+  display: flex;
+  gap: 6px;
+}
+
+.chat input {
+  flex: 1;
+  min-width: 0;
+}
