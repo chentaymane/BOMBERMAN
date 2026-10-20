@@ -5,6 +5,7 @@ import { loginView } from './login.js'
 import { lobbyView } from './lobby.js'
 import { chatView } from './chat.js'
 import { gameView } from './game.js'
+import { repeatMove } from './controls.js'
 
 let chatId = 0
 let nextGame = null // newest game state, drawn on the next frame
@@ -42,11 +43,12 @@ function view(s) {
 mount(view, document.getElementById('app'), store)
 
 // Game loop: the newest state from the server is drawn once per frame
-function loop() {
+function loop(now) {
   if (nextGame) {
     store.setState({ screen: 'game', game: nextGame })
     nextGame = null
   }
+  repeatMove(now)
   requestAnimationFrame(loop)
 }
 
