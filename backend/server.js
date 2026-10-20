@@ -2,17 +2,16 @@
 const http = require('http')
 const fs = require('fs')
 const path = require('path')
-const ws = require('./ws')
+const { WebSocketServer } = require('ws')
 const game = require('./game')
 
 const PORT = process.env.PORT || 8080
 const MAX_CONNECTIONS = 50
+const MAX_MESSAGE_SIZE = 4096 // bigger messages close the connection
 const MAX_MESSAGES_PER_SECOND = 60 // extra messages are ignored
 const KICK_MESSAGES_PER_SECOND = 200 // spammer gets disconnected
 const FRONTEND = path.join(__dirname, '..', 'frontend')
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml' }
-
-let connections = 0
 
 // Send the frontend files (only html, js, css and svg from the frontend folder)
 const server = http.createServer((req, res) => {
@@ -65,18 +64,18 @@ function onMessage(client, text) {
   }
 }
 
-function onClose(client) {
-  connections--
-  game.leave(client)
-}
+// The ws library does the WebSocket handshake and reads the messages for us
+const wss = new WebSocketServer({ server, maxPayload: MAX_MESSAGE_SIZE })
 
-server.on('upgrade', (req, socket, head) => {
-  if (connections >= MAX_CONNECTIONS) return socket.destroy()
-  const client = ws.accept(req, socket, head, onMessage, onClose)
-  if (!client) return
+wss.on('connection', (client) => {
+  if (wss.clients.size > MAX_CONNECTIONS) return client.terminate()
   client.windowStart = 0
   client.count = 0
-  connections++
+  client.on('message', (data, isBinary) => {
+    if (!isBinary) onMessage(client, data.toString())
+  })
+  client.on('close', () => game.leave(client))
+  client.on('error', () => {}) // bad or too big message: ws closes the connection itself
 })
 
 server.listen(PORT, () => console.log('Server on http://localhost:' + PORT))
