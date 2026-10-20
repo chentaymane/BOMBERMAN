@@ -416,8 +416,9 @@ button:disabled {
   gap: 8px;
 }
 
-.chip.out {
-  opacity: 0.5;
+/* Out: dim the avatar only, the text stays readable and says "Out" */
+.chip.out .avatar {
+  opacity: 0.35;
 }
 
 .chip-text {
