@@ -3,6 +3,7 @@
 ## Start the server
 
 ```bash
+npm install        # only the first time (installs the ws library)
 npm start          # or: node server.js
 ```
 

@@ -16,15 +16,18 @@ The game is drawn with plain DOM elements, using our own [mini-framework](fronte
 
 ## Requirements
 
-- [Node.js](https://nodejs.org) 18 or newer. There are no packages to install.
+- [Node.js](https://nodejs.org) 18 or newer. The backend uses one package, [ws](https://github.com/websockets/ws), for the WebSocket.
 - A modern browser (Chrome, Firefox, Safari or Edge).
 
 ## Run the game
 
 ```bash
 cd backend
+npm install
 npm start
 ```
+
+`npm install` is only needed the first time.
 
 Open http://localhost:8080 in 2 to 4 browser tabs, enter a nickname in each one, and wait for the countdown.
 
@@ -52,8 +55,7 @@ Friends on the same network can join at `http://<your-computer-ip>:8080`. To use
 
 ```
 backend/
-  server.js       HTTP server: sends the frontend files and accepts the WebSocket
-  ws.js           small WebSocket implementation (no library)
+  server.js       HTTP server: sends the frontend files and accepts the WebSocket (ws library)
   game.js         all game rules: lobby, map, moves, bombs, lives, power-ups
   API.md          every message between the browser and the server
 frontend/
