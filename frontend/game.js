@@ -1,6 +1,6 @@
 import { h } from './framework/index.js'
 
-const TILES = { '#': 'wall', B: 'block', X: 'bomb', F: 'fire', b: 'power-bomb', f: 'power-flame', s: 'power-speed' }
+const TILES = { '#': 'wall', B: 'block', X: 'bomb', b: 'power power-bomb', f: 'power power-flame', s: 'power power-speed' }
 
 const initial = (name) => name.charAt(0).toUpperCase()
 
@@ -9,16 +9,31 @@ const initial = (name) => name.charAt(0).toUpperCase()
 let lastMap = null
 let lastTiles = null
 
+function tileClass(map, bombs, x, y) {
+  // A player standing on a bomb hides it in the map, so use the bombs list
+  if (bombs.has(x + ',' + y)) return 'bomb'
+  const symbol = map[y][x]
+  if (symbol === 'F') {
+    // Explosions are drawn as a cross: each arm joins the fire next to it
+    const fire = (dx, dy) => (map[y + dy] || [])[x + dx] === 'F'
+    const across = fire(-1, 0) || fire(1, 0)
+    const down = fire(0, -1) || fire(0, 1)
+    if (across && !down) return 'fire h'
+    if (down && !across) return 'fire v'
+    return 'fire c'
+  }
+  if (TILES[symbol]) return TILES[symbol]
+  // Floor right under a wall or a block gets its shadow
+  const above = (map[y - 1] || [])[x]
+  return above === '#' || above === 'B' ? 'shade' : ''
+}
+
 function tilesView(game) {
   if (game.map === lastMap) return lastTiles
-  // A player standing on a bomb hides it in the map, so use the bombs list
   const bombs = new Set(game.bombs.map((b) => b.x + ',' + b.y))
   const cells = []
   game.map.forEach((row, y) =>
-    row.forEach((symbol, x) => {
-      const tile = bombs.has(x + ',' + y) ? 'bomb' : TILES[symbol] || ''
-      cells.push(h('div', { class: 'cell ' + tile }))
-    }),
+    row.forEach((symbol, x) => cells.push(h('div', { class: 'cell ' + tileClass(game.map, bombs, x, y) }))),
   )
   lastMap = game.map
   lastTiles = h('div', { class: 'tiles', 'aria-hidden': 'true' }, cells)

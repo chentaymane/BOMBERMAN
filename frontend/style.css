@@ -352,27 +352,6 @@ button:disabled {
   padding: 0 16px;
 }
 
-/* Game board colors (the content layer) */
-:root {
-  --floor: #d8e8cd;
-  --floor-2: #cee2c1;
-  --wall: #8e8e93;
-  --wall-top: #aeaeb2;
-  --block: #c4955f;
-  --block-top: #d9b07f;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --floor: #1d3324;
-    --floor-2: #223a29;
-    --wall: #48484a;
-    --wall-top: #636366;
-    --block: #8a6440;
-    --block-top: #a47c55;
-  }
-}
-
 /* Game screen */
 .game {
   width: calc(15 * var(--cell));
@@ -451,20 +430,20 @@ button:disabled {
   font-size: 0.8125rem;
 }
 
-/* Board: the one bold element of the page */
+/* Board: the classic Bomberman map, drawn with the SVG textures in frontend/textures */
 .board {
   position: relative;
   width: calc(15 * var(--cell));
   height: calc(13 * var(--cell));
-  border-radius: 20px;
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: 0 0 0 4px #070a14, 0 0 0 6px rgba(255, 255, 255, 0.08), var(--shadow);
 }
 
 .tiles {
   display: grid;
   grid-template-columns: repeat(15, var(--cell));
-  background: repeating-conic-gradient(var(--floor) 0 25%, var(--floor-2) 0 50%) 0 0 / calc(var(--cell) * 2) calc(var(--cell) * 2);
+  background: url(textures/floor.svg) 0 0 / calc(var(--cell) * 2) calc(var(--cell) * 2);
 }
 
 .cell {
@@ -472,38 +451,56 @@ button:disabled {
   height: var(--cell);
   display: grid;
   place-items: center;
-  font-size: calc(var(--cell) * 0.5);
-}
-
-/* Walls and blocks: rounded tiles with a small gap around them */
-.wall,
-.block {
-  padding: 2px;
-  border-radius: 10px;
-  background-clip: content-box;
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
 
 .wall {
-  background-image: linear-gradient(var(--wall-top), var(--wall));
+  background-image: url(textures/wall.svg);
 }
 
 .block {
-  background-image: linear-gradient(var(--block-top), var(--block));
+  background-image: url(textures/brick.svg);
 }
 
+/* Floor right under a wall or a block: its shadow */
+.shade {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.25), transparent 40%);
+}
+
+/* Explosion: a cross of fire made of a center and arms that join their neighbors */
 .fire {
-  border-radius: 30%;
-  background: radial-gradient(circle, #ffd60a 15%, #ff9f0a 55%, #ff453a);
+  --band: transparent 14%, #e8401c 16%, #ff9a1f 28%, #ffe45c 40%, #fff 50%, #ffe45c 60%, #ff9a1f 72%, #e8401c 84%, transparent 86%;
+  animation: burst 0.2s ease-out;
 }
 
+.fire.h {
+  background-image: linear-gradient(var(--band));
+}
+
+.fire.v {
+  background-image: linear-gradient(90deg, var(--band));
+}
+
+.fire.c {
+  background-image: radial-gradient(circle, #fff 20%, transparent 45%), linear-gradient(var(--band)), linear-gradient(90deg, var(--band));
+}
+
+@keyframes burst {
+  from {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+}
+
+/* Bomb: ticks until it explodes */
 .bomb::after {
   content: '';
-  width: 70%;
-  height: 70%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #8e8e93, #1d1d1f 55%);
-  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
-  animation: tick 0.5s infinite alternate;
+  width: 90%;
+  height: 90%;
+  background: url(textures/bomb.svg) center / contain no-repeat;
+  animation: tick 0.4s ease-in-out infinite alternate;
 }
 
 @keyframes tick {
@@ -512,29 +509,38 @@ button:disabled {
   }
 }
 
-/* Power-ups: an icon on a small white tile */
-.power-bomb::after,
-.power-flame::after,
-.power-speed::after {
-  width: 76%;
-  height: 76%;
-  border-radius: 28%;
-  background: var(--surface);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+/* Power-ups: classic colored panels with an icon */
+.power::after {
+  width: 80%;
+  height: 80%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
   display: grid;
   place-items: center;
+  font-size: calc(var(--cell) * 0.42);
+  animation: bob 0.6s ease-in-out infinite alternate;
 }
 
 .power-bomb::after {
   content: '💣';
+  background: linear-gradient(#5b8cff, #2f5bd8);
 }
 
 .power-flame::after {
   content: '🔥';
+  background: linear-gradient(#ff7a59, #d8361c);
 }
 
 .power-speed::after {
   content: '⚡';
+  background: linear-gradient(#3ee08f, #13a35e);
+}
+
+@keyframes bob {
+  to {
+    transform: translateY(-3px);
+  }
 }
 
 /* Players: moved with transform only, so the browser does not re-layout */
@@ -652,6 +658,8 @@ kbd {
   }
 
   .bomb::after,
+  .power::after,
+  .fire,
   .player.safe {
     animation: none;
   }
