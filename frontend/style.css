@@ -10,11 +10,14 @@ body {
   margin: 0;
   min-height: 100vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
   background: #1e1e2e;
   color: #eee;
   font-family: Arial, sans-serif;
+}
+
+/* auto margins center the page, and it can still scroll when the window is small */
+#app {
+  margin: auto;
 }
 
 h1,
@@ -110,4 +113,151 @@ button:disabled {
 .chat input {
   flex: 1;
   min-width: 0;
+}
+
+/* Board */
+.board {
+  position: relative;
+  width: calc(15 * var(--cell));
+  height: calc(13 * var(--cell));
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(15, var(--cell));
+}
+
+.cell {
+  width: var(--cell);
+  height: var(--cell);
+  background: #3c8d40;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+}
+
+.wall {
+  background: #555;
+  border: 4px outset #777;
+}
+
+.block {
+  background: #a0522d;
+  border: 4px outset #c0703d;
+}
+
+.fire {
+  background: radial-gradient(#ffeb3b, #ff5722);
+}
+
+.bomb::after {
+  content: '';
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  background: #111;
+  animation: pulse 0.5s infinite alternate;
+}
+
+.power-bomb::after {
+  content: '💣';
+}
+
+.power-flame::after {
+  content: '🔥';
+}
+
+.power-speed::after {
+  content: '⚡';
+}
+
+@keyframes pulse {
+  to {
+    transform: scale(0.8);
+  }
+}
+
+/* Players: moved with transform only, so the browser does not re-layout */
+.players {
+  position: absolute;
+  inset: 0;
+}
+
+.player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--cell);
+  height: var(--cell);
+  border: 3px solid rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-weight: bold;
+  transition: transform 0.08s linear;
+  will-change: transform;
+}
+
+.player.me {
+  border-color: #fff;
+}
+
+.safe {
+  animation: blink 0.3s infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.p1 {
+  background: #e53935;
+}
+
+.p2 {
+  background: #1e88e5;
+}
+
+.p3 {
+  background: #fdd835;
+  color: #222;
+}
+
+.p4 {
+  background: #8e24aa;
+}
+
+/* Players info under the board */
+.hud {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.hud li {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #2a2a3d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud .dead {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
 }
