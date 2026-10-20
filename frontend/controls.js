@@ -9,6 +9,7 @@ let held = null // direction of the arrow key held down
 let lastSent = 0
 
 on(document, 'keydown', (e) => {
+  if (e.key === 'Escape' && e.target.tagName === 'INPUT') return e.target.blur() // back to the game
   const move = KEYS[e.key]
   if (!move || e.target.tagName === 'INPUT' || store.getState().screen !== 'game') return
   e.preventDefault() // no page scroll

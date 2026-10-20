@@ -15,7 +15,7 @@
 
   --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --cell: min(40px, calc((100vw - 48px) / 15)); /* board shrinks on small windows */
+  --cell: min(40px, calc((100vw - 64px) / 15)); /* board shrinks on small windows (64px = padding + scrollbar) */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -342,62 +342,147 @@ button:disabled {
   padding: 0 16px;
 }
 
-/* Board */
-.top {
-  margin-bottom: 8px;
+/* Game board colors (the content layer) */
+:root {
+  --floor: #d8e8cd;
+  --floor-2: #cee2c1;
+  --wall: #8e8e93;
+  --wall-top: #aeaeb2;
+  --block: #c4955f;
+  --block-top: #d9b07f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --floor: #1d3324;
+    --floor-2: #223a29;
+    --wall: #48484a;
+    --wall-top: #636366;
+    --block: #8a6440;
+    --block-top: #a47c55;
+  }
+}
+
+/* Game screen */
+.game {
+  width: calc(15 * var(--cell));
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.game-header h2 {
+  margin-right: auto;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--fill);
+  color: var(--label-2);
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .fps {
-  color: #8f8;
-  font-family: monospace;
+  color: var(--label-2);
+  font: 500 0.8125rem var(--mono);
 }
 
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+/* Players bar: above the board, so lives are always in view */
+.chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.chip {
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip.out {
+  opacity: 0.5;
+}
+
+.chip-text {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }
 
+.chip b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9375rem;
+}
+
+.stats {
+  display: flex;
+  gap: 6px;
+  color: var(--label-2);
+  font-size: 0.8125rem;
+}
+
+/* Board: the one bold element of the page */
 .board {
   position: relative;
   width: calc(15 * var(--cell));
   height: calc(13 * var(--cell));
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
 .tiles {
   display: grid;
   grid-template-columns: repeat(15, var(--cell));
+  background: repeating-conic-gradient(var(--floor) 0 25%, var(--floor-2) 0 50%) 0 0 / calc(var(--cell) * 2) calc(var(--cell) * 2);
 }
 
 .cell {
   width: var(--cell);
   height: var(--cell);
-  background: #3c8d40;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 22px;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--cell) * 0.5);
+}
+
+/* Walls and blocks: rounded tiles with a small gap around them */
+.wall,
+.block {
+  padding: 2px;
+  border-radius: 10px;
+  background-clip: content-box;
 }
 
 .wall {
-  background: #555;
-  border: 4px outset #777;
+  background-image: linear-gradient(var(--wall-top), var(--wall));
 }
 
 .block {
-  background: #a0522d;
-  border: 4px outset #c0703d;
+  background-image: linear-gradient(var(--block-top), var(--block));
 }
 
 .fire {
-  background: radial-gradient(#ffeb3b, #ff5722);
+  border-radius: 30%;
+  background: radial-gradient(circle, #ffd60a 15%, #ff9f0a 55%, #ff453a);
 }
 
 .bomb::after {
@@ -405,8 +490,28 @@ button:disabled {
   width: 70%;
   height: 70%;
   border-radius: 50%;
-  background: #111;
-  animation: pulse 0.5s infinite alternate;
+  background: radial-gradient(circle at 35% 30%, #8e8e93, #1d1d1f 55%);
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: tick 0.5s infinite alternate;
+}
+
+@keyframes tick {
+  to {
+    transform: scale(0.85);
+  }
+}
+
+/* Power-ups: an icon on a small white tile */
+.power-bomb::after,
+.power-flame::after,
+.power-speed::after {
+  width: 76%;
+  height: 76%;
+  border-radius: 28%;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  display: grid;
+  place-items: center;
 }
 
 .power-bomb::after {
@@ -421,12 +526,6 @@ button:disabled {
   content: '⚡';
 }
 
-@keyframes pulse {
-  to {
-    transform: scale(0.8);
-  }
-}
-
 /* Players: moved with transform only, so the browser does not re-layout */
 .players {
   position: absolute;
@@ -435,61 +534,118 @@ button:disabled {
 
 .player {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--cell);
-  height: var(--cell);
-  border: 3px solid rgba(0, 0, 0, 0.4);
+  top: calc(var(--cell) * 0.08);
+  left: calc(var(--cell) * 0.08);
+  width: calc(var(--cell) * 0.84);
+  height: calc(var(--cell) * 0.84);
   border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  place-items: center;
   color: #fff;
-  font-weight: bold;
+  font-size: calc(var(--cell) * 0.42);
+  font-weight: 700;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
   transition: transform 0.08s linear;
   will-change: transform;
 }
 
+/* My player: white ring */
 .player.me {
-  border-color: #fff;
+  box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(0, 0, 0, 0.35);
 }
 
-.safe {
+/* Cannot be hit: dashed ring and blink (the ring stays when motion is reduced) */
+.player.safe {
+  outline: 2px dashed var(--label);
+  outline-offset: 3px;
   animation: blink 0.3s infinite;
 }
 
 @keyframes blink {
   50% {
-    opacity: 0.2;
+    opacity: 0.35;
   }
 }
 
-/* Players info under the board */
-.hud {
-  margin: 12px 0 0;
-  padding: 0;
-  list-style: none;
+/* Game over: a floating glass panel (the only glass on the page) */
+.overlay {
+  position: absolute;
+  inset: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.35);
 }
 
-.hud li {
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: #2a2a3d;
+.alert {
+  width: min(280px, 80%);
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(24px) saturate(1.4);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
 }
 
-.hud .dead {
-  opacity: 0.4;
-  text-decoration: line-through;
+.alert p {
+  font-size: 0.9375rem;
 }
 
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+@media (prefers-color-scheme: dark) {
+  .alert {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(44, 44, 46, 0.72);
+  }
+}
+
+/* System settings "Reduce transparency" and "Increase contrast": solid panel */
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .alert {
+    border-color: var(--separator);
+    background: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Keyboard help under the board */
+.hint {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  color: var(--label-2);
+  font-size: 0.8125rem;
+}
+
+kbd {
+  margin-right: 4px;
+  padding: 2px 6px;
+  border: 1px solid var(--separator);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--label);
+  font: 600 0.75rem var(--font);
+}
+
+/* System setting "Reduce motion" */
+@media (prefers-reduced-motion: reduce) {
+  .player,
+  .progress-bar {
+    transition: none;
+  }
+
+  .bomb::after,
+  .player.safe {
+    animation: none;
+  }
+
+  button:active {
+    transform: none;
+  }
 }
