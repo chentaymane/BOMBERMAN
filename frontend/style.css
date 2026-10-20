@@ -252,22 +252,6 @@ button:disabled {
   background-image: url(characters/6.webp);
 }
 
-.p1 {
-  background-image: url(textures/player-1.svg);
-}
-
-.p2 {
-  background-image: url(textures/player-2.svg);
-}
-
-.p3 {
-  background-image: url(textures/player-3.svg);
-}
-
-.p4 {
-  background-image: url(textures/player-4.svg);
-}
-
 /* Waiting room */
 .slots {
   margin: 0;
@@ -604,14 +588,15 @@ button:disabled {
   inset: 0;
 }
 
+/* The character is a bit bigger than a cell, with the feet on the cell (like classic game sprites) */
 .player {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--cell);
-  height: var(--cell);
-  background-position: center;
-  background-size: 100%;
+  top: calc(var(--cell) * -0.4);
+  left: calc(var(--cell) * -0.2);
+  width: calc(var(--cell) * 1.4);
+  height: calc(var(--cell) * 1.4);
+  background-position: center bottom;
+  background-size: contain;
   background-repeat: no-repeat;
   transition: transform 200ms linear;
   will-change: transform;

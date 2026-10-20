@@ -50,7 +50,7 @@ function playerView(p, me) {
   lastPos[p.id] = { x: p.x, y: p.y }
   return h('div', {
     key: p.id,
-    class: `player p${p.id}${p.safe ? ' safe' : ''}${p.name === me ? ' me' : ''}`,
+    class: `player c${p.character}${p.safe ? ' safe' : ''}${p.name === me ? ' me' : ''}`,
     style: {
       transform: `translate(calc(${p.x} * var(--cell)), calc(${p.y} * var(--cell)))`,
       transitionDuration: respawn ? '0ms' : 200 - p.speed * 30 + 'ms', // no slide back to the corner
@@ -66,7 +66,7 @@ function chipView(p, me) {
   if (p.name === me) classes += ' me'
   if (!alive) classes += ' out'
   return h('li', { key: p.id, class: classes },
-    h('span', { class: 'avatar p' + p.id }),
+    h('span', { class: 'avatar c' + p.character }),
     h('span', { class: 'chip-text' },
       h('span', { class: 'chip-top' },
         h('b', {}, p.name === me ? p.name + ' (you)' : p.name),
@@ -90,7 +90,7 @@ function overView(s, game) {
   else if (s.winner) title = s.winner + ' Wins!'
   return h('div', { class: 'overlay' },
     h('div', { class: 'result', role: 'alert' },
-      winner && h('span', { class: 'avatar p' + winner.id }),
+      winner && h('span', { class: 'avatar c' + winner.character }),
       h('h2', {}, title),
       h('p', { class: 'secondary' }, 'Back to the waiting room in 5 s…'),
     ),
