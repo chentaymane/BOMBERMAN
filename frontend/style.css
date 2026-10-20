@@ -57,3 +57,15 @@ button:disabled {
   margin: 0;
   color: #ff6b6b;
 }
+
+.counter {
+  margin: 0;
+  font-size: 48px;
+  font-weight: bold;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

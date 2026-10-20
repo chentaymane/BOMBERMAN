@@ -6,4 +6,5 @@ export const store = createStore({
   name: '', // nickname input
   me: '', // nickname accepted by the server
   error: '',
+  lobby: { players: [], waitSeconds: null, countdown: null },
 })

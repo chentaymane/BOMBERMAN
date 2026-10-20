@@ -2,6 +2,7 @@ import { h, mount } from './framework/index.js'
 import { store } from './store.js'
 import { connect } from './socket.js'
 import { loginView } from './login.js'
+import { lobbyView } from './lobby.js'
 
 function onMessage(msg) {
   switch (msg.type) {
@@ -9,6 +10,8 @@ function onMessage(msg) {
       return store.setState({ screen: 'lobby', me: msg.name, error: '' })
     case 'error':
       return store.setState({ error: msg.message })
+    case 'lobby':
+      return store.setState({ screen: 'lobby', lobby: msg })
   }
 }
 
@@ -20,7 +23,7 @@ connect(
 
 function view(s) {
   if (s.screen === 'login') return loginView(s)
-  return h('div', { class: 'card' }, h('h1', {}, 'Welcome ' + s.me))
+  return lobbyView(s)
 }
 
 mount(view, document.getElementById('app'), store)
