@@ -18,7 +18,7 @@ function onMessage(msg) {
       return store.setState({ error: msg.message })
     case 'lobby':
       nextGame = null
-      return store.setState({ screen: 'lobby', lobby: msg, game: null })
+      return store.setState({ screen: 'lobby', lobby: msg, game: null, over: false, winner: null })
     case 'state':
       nextGame = msg
       return
@@ -26,6 +26,8 @@ function onMessage(msg) {
       return store.setState((s) => ({
         messages: [{ id: ++chatId, from: msg.from, text: msg.text }, ...s.messages].slice(0, 50),
       }))
+    case 'over':
+      return store.setState({ over: true, winner: msg.winner })
   }
 }
 
@@ -43,12 +45,23 @@ function view(s) {
 mount(view, document.getElementById('app'), store)
 
 // Game loop: the newest state from the server is drawn once per frame
+let frames = 0
+let fpsStart = performance.now()
+
 function loop(now) {
   if (nextGame) {
     store.setState({ screen: 'game', game: nextGame })
     nextGame = null
   }
   repeatMove(now)
+
+  // Count frames, show the FPS once per second
+  frames++
+  if (now - fpsStart >= 1000) {
+    store.setState({ fps: Math.round((frames * 1000) / (now - fpsStart)) })
+    frames = 0
+    fpsStart = now
+  }
   requestAnimationFrame(loop)
 }
 

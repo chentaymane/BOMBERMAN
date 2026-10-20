@@ -8,6 +8,9 @@ export const store = createStore({
   error: '',
   lobby: { players: [], waitSeconds: null, countdown: null },
   game: null, // last 'state' message from the server
+  over: false, // game finished
+  winner: null, // winner name, null if nobody survived
+  fps: 0,
   messages: [], // chat, newest first
   draft: '', // chat input
 })

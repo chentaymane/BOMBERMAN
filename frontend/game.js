@@ -42,12 +42,25 @@ function hudView(game, me) {
   ))
 }
 
+function overView(s) {
+  let text = 'Nobody survived!'
+  if (s.winner === s.me) text = 'You win!'
+  else if (s.winner) text = s.winner + ' wins!'
+  return h('div', { class: 'overlay' }, h('h1', {}, text), h('p', {}, 'Back to the waiting room in 5s...'))
+}
+
 export function gameView(s) {
   const game = s.game
+  const me = game.players.find((p) => p.name === s.me)
   return h('div', { class: 'game' },
+    h('div', { class: 'top' },
+      h('h2', {}, me && me.lives === 0 ? 'You are out!' : 'Bomberman'),
+      h('span', { class: 'fps' }, s.fps + ' FPS'),
+    ),
     h('div', { class: 'board' },
       tilesView(game),
       h('div', { class: 'players' }, game.players.filter((p) => p.lives > 0).map((p) => playerView(p, s.me))),
+      s.over && overView(s),
     ),
     hudView(game, s.me),
   )
