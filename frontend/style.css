@@ -357,31 +357,7 @@ button:disabled {
   width: calc(15 * var(--cell));
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.game-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.game-header h2 {
-  margin-right: auto;
-}
-
-.badge {
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--fill);
-  color: var(--label-2);
-  font-size: 0.8125rem;
-  font-weight: 600;
-}
-
-.fps {
-  color: var(--label-2);
-  font: 500 0.8125rem var(--mono);
+  gap: 14px;
 }
 
 /* Players bar: above the board, so lives are always in view */
@@ -390,44 +366,63 @@ button:disabled {
   padding: 0;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
 }
 
 .chip {
   min-width: 0;
-  padding: 8px 10px;
-  border-radius: 14px;
+  padding: 8px 12px 8px 8px;
+  border: 1px solid var(--separator);
+  border-radius: 18px;
   background: var(--surface);
-  box-shadow: var(--shadow);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-/* Out: dim the avatar only, the text stays readable and says "Out" */
+.chip.me {
+  border-color: var(--accent);
+}
+
+/* Out: grey face, the text stays readable and says "Out" */
 .chip.out .avatar {
-  opacity: 0.35;
+  filter: grayscale(1);
+  opacity: 0.5;
 }
 
 .chip-text {
+  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 2px;
+}
+
+.chip-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .chip b {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.hearts {
+  flex: none;
+  color: var(--label-2);
+  font-size: 0.875rem;
 }
 
 .stats {
   display: flex;
-  gap: 6px;
+  gap: 12px;
   color: var(--label-2);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 /* Board: the classic Bomberman map, drawn with the SVG textures in frontend/textures */
@@ -543,7 +538,8 @@ button:disabled {
   }
 }
 
-/* Players: moved with transform only, so the browser does not re-layout */
+/* Players: moved with transform only, so the browser does not re-layout.
+   The slide lasts as long as the server's move delay (set in game.js), so walking looks smooth. */
 .players {
   position: absolute;
   inset: 0;
@@ -551,117 +547,167 @@ button:disabled {
 
 .player {
   position: absolute;
-  top: calc(var(--cell) * 0.08);
-  left: calc(var(--cell) * 0.08);
-  width: calc(var(--cell) * 0.84);
-  height: calc(var(--cell) * 0.84);
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-size: calc(var(--cell) * 0.42);
-  font-weight: 700;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-  transition: transform 0.08s linear;
+  top: 0;
+  left: 0;
+  width: var(--cell);
+  height: var(--cell);
+  background-position: center;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  transition: transform 200ms linear;
   will-change: transform;
 }
 
-/* My player: white ring */
-.player.me {
-  box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(0, 0, 0, 0.35);
+/* Name over the head, yellow for my player */
+.tag {
+  position: absolute;
+  bottom: 88%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(7, 10, 20, 0.8);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-/* Cannot be hit: dashed ring and blink (the ring stays when motion is reduced) */
+.me .tag {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Cannot be hit for 2 s after losing a life: blinks */
 .player.safe {
-  outline: 2px dashed var(--label);
-  outline-offset: 3px;
   animation: blink 0.3s infinite;
 }
 
 @keyframes blink {
   50% {
-    opacity: 0.35;
+    opacity: 0.2;
   }
 }
 
-/* Game over: a floating glass panel (the only glass on the page) */
+.banner {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(7, 10, 20, 0.8);
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Game over: the winner pops up over the board */
 .overlay {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(7, 10, 20, 0.55);
+  animation: fade 0.3s ease-out;
 }
 
-.alert {
-  width: min(280px, 80%);
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.72);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  backdrop-filter: blur(24px) saturate(1.4);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+.result {
+  width: min(300px, 80%);
+  padding: 24px;
+  border: 1px solid var(--separator);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 10px;
   text-align: center;
+  animation: pop 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
 }
 
-.alert p {
-  font-size: 0.9375rem;
+.result .avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .alert {
-    border-color: rgba(255, 255, 255, 0.12);
-    background: rgba(44, 44, 46, 0.72);
+.result h2 {
+  font-size: 1.75rem;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
   }
 }
 
-/* System settings "Reduce transparency" and "Increase contrast": solid panel */
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .alert {
-    border-color: var(--separator);
-    background: var(--surface);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+@keyframes pop {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
   }
 }
 
-/* Keyboard help under the board */
+/* Under the board: keyboard help and FPS */
+.game-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
 .hint {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 16px;
+  gap: 6px 14px;
   color: var(--label-2);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
 }
 
 kbd {
-  margin-right: 4px;
-  padding: 2px 6px;
+  margin-right: 5px;
+  padding: 2px 7px;
   border: 1px solid var(--separator);
-  border-bottom-width: 2px;
-  border-radius: 6px;
-  background: var(--surface);
+  border-bottom-width: 3px;
+  border-radius: 8px;
+  background: var(--fill);
   color: var(--label);
   font: 600 0.75rem var(--font);
+}
+
+.fps {
+  padding: 4px 10px;
+  border: 1px solid var(--separator);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--label-2);
+  font: 600 0.8125rem var(--mono);
 }
 
 /* System setting "Reduce motion" */
 @media (prefers-reduced-motion: reduce) {
   .player,
   .progress-bar {
-    transition: none;
+    transition-property: none;
   }
 
+  .logo,
   .bomb::after,
   .power::after,
   .fire,
+  .overlay,
+  .result {
+    animation: none;
+  }
+
+  /* still see-through while it can not be hit, without blinking */
   .player.safe {
     animation: none;
+    opacity: 0.5;
   }
 
   button:active {
