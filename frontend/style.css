@@ -1,34 +1,22 @@
-/* Apple style colors, named by role. Light by default, dark when the system is dark.
-   Text contrast is 4.5:1 or more (white on accent: 4.7:1). */
+/* Game theme: dark and rounded. Text contrast is 6.5:1 or more. */
 :root {
-  color-scheme: light dark;
-  --bg: #f2f2f7;
-  --surface: #ffffff;
-  --fill: #e9e9eb;
-  --label: #1d1d1f;
-  --label-2: #636366;
-  --separator: rgba(60, 60, 67, 0.2);
-  --accent: #0071e3;
-  --on-accent: #ffffff;
-  --danger: #d70015;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
+  color-scheme: dark;
+  --bg: #0b1020;
+  --surface: #161e36; /* panels */
+  --fill: #222c4a; /* things inside panels */
+  --field: #0e1428; /* text fields */
+  --label: #f4f6fb;
+  --label-2: #aab3cc;
+  --separator: rgba(255, 255, 255, 0.12);
+  --accent: #ffc23d;
+  --accent-2: #ff8a1f;
+  --on-accent: #2b1600;
+  --danger: #ff7a7a;
+  --shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 
-  --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font: 'Fredoka', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --cell: min(40px, calc((100vw - 64px) / 15)); /* board shrinks on small windows (64px = padding + scrollbar) */
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #000000;
-    --surface: #1c1c1e;
-    --fill: #2c2c2e;
-    --label: #f5f5f7;
-    --label-2: #a1a1a6;
-    --separator: rgba(84, 84, 88, 0.65);
-    --danger: #ff6961;
-    --shadow: none;
-  }
 }
 
 /* System setting "Increase contrast" */
@@ -47,7 +35,7 @@ body {
   margin: 0;
   min-height: 100vh;
   display: flex;
-  background: var(--bg);
+  background: radial-gradient(1200px 600px at 50% -10%, #24315e, transparent), var(--bg);
   color: var(--label);
   font: 400 1.0625rem/1.4 var(--font);
   -webkit-font-smoothing: antialiased;
@@ -65,15 +53,13 @@ p {
 }
 
 h1 {
-  font-size: 2.125rem;
+  font-size: 2.25rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
 }
 
 h2 {
   font-size: 1.375rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
 }
 
 .secondary {
@@ -83,45 +69,55 @@ h2 {
 input,
 button {
   font: inherit;
-  min-height: 44px;
+  min-height: 46px;
 }
 
 input {
-  padding: 0 14px;
-  border: 1px solid var(--separator);
-  border-radius: 12px;
-  background: var(--fill);
+  padding: 0 16px;
+  border: 1.5px solid var(--separator);
+  border-radius: 14px;
+  background: var(--field);
   color: var(--label);
+  transition: border-color 0.15s;
 }
 
 input::placeholder {
   color: var(--label-2);
 }
 
-/* One prominent button style: blue capsule */
+input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* Game button: yellow to orange, with a darker edge under it */
 button {
-  padding: 0 20px;
+  padding: 0 22px;
   border: none;
-  border-radius: 999px;
-  background: var(--accent);
+  border-radius: 14px;
+  background: linear-gradient(var(--accent), var(--accent-2));
   color: var(--on-accent);
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 4px 0 #b55a00;
   cursor: pointer;
+  transition: transform 0.08s, box-shadow 0.08s, filter 0.15s;
 }
 
 button:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.06);
 }
 
 button:active {
-  transform: scale(0.97); /* press state */
+  transform: translateY(3px); /* press state: the button goes down */
+  box-shadow: 0 1px 0 #b55a00;
 }
 
 button:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: default;
   filter: none;
   transform: none;
+  box-shadow: none;
 }
 
 :focus-visible {
@@ -130,9 +126,10 @@ button:disabled {
 }
 
 .card {
-  width: min(380px, calc(100vw - 48px));
+  width: min(400px, calc(100vw - 48px));
   padding: 32px 24px 24px;
-  border-radius: 20px;
+  border: 1px solid var(--separator);
+  border-radius: 24px;
   background: var(--surface);
   box-shadow: var(--shadow);
   display: flex;
@@ -147,15 +144,28 @@ button:disabled {
 }
 
 /* Nickname screen */
-.app-icon {
-  width: 72px;
-  height: 72px;
+.logo {
+  width: 96px;
+  height: 96px;
   margin: 0 auto;
-  border-radius: 16px;
-  background: linear-gradient(#ffb340, #ff7a00);
-  display: grid;
-  place-items: center;
-  font-size: 40px;
+  background: url(textures/bomb.svg) center / contain no-repeat;
+  animation: float 2s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+  to {
+    transform: translateY(-8px) rotate(-6deg);
+  }
+}
+
+.title {
+  font-size: 2.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: linear-gradient(var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .field {
@@ -166,39 +176,37 @@ button:disabled {
 }
 
 .field-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
   color: var(--label-2);
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
-/* Player colors (Apple system colors). Initials are bold, so 3:1 is enough (lowest: 3.55:1) */
+/* Player faces (same character in the waiting room, the players bar and the board) */
+.avatar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background-color: var(--fill);
+  background-position: center 20%;
+  background-size: 160%; /* zoom on the head */
+  background-repeat: no-repeat;
+}
+
 .p1 {
-  background: #ff3b30;
+  background-image: url(textures/player-1.svg);
 }
 
 .p2 {
-  background: #007aff;
+  background-image: url(textures/player-2.svg);
 }
 
 .p3 {
-  background: #ffcc00;
-  color: #1d1d1f;
+  background-image: url(textures/player-3.svg);
 }
 
 .p4 {
-  background: #af52de;
-}
-
-.avatar {
-  flex: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-size: 0.9375rem;
-  font-weight: 700;
+  background-image: url(textures/player-4.svg);
 }
 
 /* Waiting room */
@@ -208,13 +216,13 @@ button:disabled {
   list-style: none;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 .slot {
   min-width: 0;
   padding: 10px 12px;
-  border-radius: 14px;
+  border-radius: 16px;
   background: var(--fill);
   display: flex;
   align-items: center;
@@ -237,19 +245,21 @@ button:disabled {
 }
 
 .slot.empty .avatar {
+  background-color: transparent;
   border: 1.5px dashed var(--separator);
 }
 
 .progress {
-  height: 6px;
-  border-radius: 3px;
+  height: 8px;
+  border-radius: 4px;
   background: var(--fill);
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  background: var(--accent);
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
   transform-origin: left;
   transition: transform 1s linear;
 }
@@ -268,7 +278,8 @@ button:disabled {
   width: min(320px, calc(100vw - 48px));
   min-height: 420px;
   padding: 16px;
-  border-radius: 20px;
+  border: 1px solid var(--separator);
+  border-radius: 24px;
   background: var(--surface);
   box-shadow: var(--shadow);
   display: flex;
@@ -323,7 +334,7 @@ button:disabled {
 }
 
 .mine .bubble {
-  background: var(--accent);
+  background: linear-gradient(var(--accent), var(--accent-2));
   color: var(--on-accent);
 }
 
@@ -335,7 +346,6 @@ button:disabled {
 .composer input {
   flex: 1;
   min-width: 0;
-  border-radius: 999px;
 }
 
 .composer button {

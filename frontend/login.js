@@ -10,8 +10,8 @@ function join(e) {
 
 export function loginView(s) {
   return h('form', { class: 'card', onSubmit: join },
-    h('div', { class: 'app-icon', 'aria-hidden': 'true' }, '💣'),
-    h('h1', {}, 'Bomberman'),
+    h('div', { class: 'logo', 'aria-hidden': 'true' }),
+    h('h1', { class: 'title' }, 'Bomberman'),
     h('p', { class: 'secondary' }, '2 to 4 players. The last one standing wins.'),
     h('label', { class: 'field' },
       h('span', { class: 'field-label' }, 'Nickname'),

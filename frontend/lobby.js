@@ -1,10 +1,10 @@
 import { h } from './framework/index.js'
 
-// One slot per player. The color matches the player's color in the game.
+// One slot per player, with the character this player will have in the game
 function slotView(name, i, me) {
   if (!name) return h('li', { class: 'slot empty' }, h('span', { class: 'avatar' }), 'Open')
   return h('li', { class: 'slot' },
-    h('span', { class: 'avatar p' + (i + 1) }, name.charAt(0).toUpperCase()),
+    h('span', { class: 'avatar p' + (i + 1) }),
     h('span', { class: 'slot-name' }, name === me ? name + ' (you)' : name),
   )
 }
