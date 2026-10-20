@@ -24,6 +24,7 @@ const MAX_RANGE = 8
 const MAX_SPEED = 4
 const CHAT_DELAY = 300 // ms between chat messages
 const NAME_RULE = /^[\p{L}\p{N} _-]{1,15}$/u
+const CHARACTERS = 6 // pictures in frontend/characters (1 to 6)
 
 // ----- Map symbols -----
 const EMPTY = '.'
@@ -124,21 +125,27 @@ function cleanText(text, max) {
 }
 
 // ----- Lobby -----
-function join(client, name) {
+function join(client, name, character) {
   if (findPlayer(client)) return
   if (typeof name !== 'string') return send(client, { type: 'error', message: 'Nickname required' })
   name = cleanText(name, 100) // too long names fail NAME_RULE below
   if (!NAME_RULE.test(name)) {
     return send(client, { type: 'error', message: 'Nickname: 1-15 letters, numbers, space, _ or -' })
   }
+  if (!Number.isInteger(character) || character < 1 || character > CHARACTERS) {
+    return send(client, { type: 'error', message: 'Pick a character' })
+  }
   if (phase !== 'lobby' && phase !== 'countdown') return send(client, { type: 'error', message: 'Game already started' })
   if (players.length >= MAX_PLAYERS) return send(client, { type: 'error', message: 'Game is full' })
   if (players.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
     return send(client, { type: 'error', message: 'Nickname taken' })
   }
+  if (players.some((p) => p.character === character)) {
+    return send(client, { type: 'error', message: 'Character taken, pick another one' })
+  }
 
-  players.push({ client, name, lives: 0, lastChatAt: 0 })
-  send(client, { type: 'joined', name })
+  players.push({ client, name, character, lives: 0, lastChatAt: 0 })
+  send(client, { type: 'joined', name, character })
   checkLobby()
 }
 
@@ -327,7 +334,7 @@ function currentMessage(now) {
   if (phase === 'lobby' || phase === 'countdown') {
     return {
       type: 'lobby',
-      players: players.map((p) => p.name),
+      players: players.map((p) => ({ name: p.name, character: p.character })),
       waitSeconds: waitEndsAt ? Math.max(0, Math.ceil((waitEndsAt - now) / 1000)) : null,
       countdown: phase === 'countdown' ? Math.max(0, Math.ceil((startsAt - now) / 1000)) : null,
     }
@@ -338,6 +345,7 @@ function currentMessage(now) {
     players: players.map((p) => ({
       id: p.id,
       name: p.name,
+      character: p.character,
       x: p.x,
       y: p.y,
       lives: p.lives,

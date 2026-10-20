@@ -30,14 +30,15 @@ socket.onmessage = (event) => {
 
 Only 3 types exist. Anything else is ignored.
 
-### 1. Join with a nickname
+### 1. Join with a nickname and a character
 
 ```js
-send({ type: 'join', name: 'bob' })
+send({ type: 'join', name: 'bob', character: 2 })
 ```
 
 - Name: 1–15 characters. Only letters, numbers, spaces, `_` and `-` are allowed.
 - Names must be unique, ignoring case (`Bob` and `bob` are the same).
+- Character: a number from 1 to 6 (the pictures in `frontend/characters`). Two players can not pick the same one.
 - Joining only works while players are waiting (lobby or countdown), with a maximum of 4 players.
 
 ### 2. Move or drop a bomb
@@ -67,7 +68,7 @@ send({ type: 'chat', text: 'hello' })
 ### `joined`: your nickname was accepted
 
 ```json
-{ "type": "joined", "name": "bob" }
+{ "type": "joined", "name": "bob", "character": 2 }
 ```
 
 Show the waiting page.
@@ -78,19 +79,19 @@ Show the waiting page.
 { "type": "error", "message": "Nickname taken" }
 ```
 
-Possible messages: `Nickname required`, `Nickname: 1-15 letters, numbers, space, _ or -`, `Nickname taken`, `Game is full`, `Game already started`.
+Possible messages: `Nickname required`, `Nickname: 1-15 letters, numbers, space, _ or -`, `Nickname taken`, `Pick a character`, `Character taken, pick another one`, `Game is full`, `Game already started`.
 
 ### `lobby`: waiting room info
 
 Sent each time something changes (player joins or leaves, a second passes).
 
 ```json
-{ "type": "lobby", "players": ["bob", "alice"], "waitSeconds": 17, "countdown": null }
+{ "type": "lobby", "players": [{ "name": "bob", "character": 2 }, { "name": "alice", "character": 5 }], "waitSeconds": 17, "countdown": null }
 ```
 
 | field         | meaning                                                           |
 |---------------|-------------------------------------------------------------------|
-| `players`     | names of the players in the lobby → counter = `players.length`    |
+| `players`     | players in the lobby (name and character) → counter = `players.length` |
 | `waitSeconds` | seconds left of the 20s wait for more players, `null` if not running |
 | `countdown`   | seconds left of the 10s "get ready" timer, `null` if not running  |
 
@@ -112,7 +113,7 @@ Sent while the game runs, only when something changed.
     ["#",".","#","X"]
   ],
   "players": [
-    { "id": 1, "name": "bob", "x": 1, "y": 1, "lives": 3, "bombs": 1, "range": 1, "speed": 0, "safe": false }
+    { "id": 1, "name": "bob", "character": 2, "x": 1, "y": 1, "lives": 3, "bombs": 1, "range": 1, "speed": 0, "safe": false }
   ],
   "bombs": [ { "x": 3, "y": 2 } ]
 }
@@ -137,6 +138,7 @@ Sent while the game runs, only when something changed.
 | field   | meaning                                                       |
 |---------|---------------------------------------------------------------|
 | `id`    | number shown in the map (`1`–`4`), also gives the start corner |
+| `character` | picked character (1–6)                                   |
 | `x`,`y` | position (same as in the map)                                 |
 | `lives` | lives left (starts at 3, `0` = dead and removed from the map) |
 | `bombs` | how many bombs the player can drop at the same time           |
@@ -175,7 +177,7 @@ let myName = ''
 
 socket.onopen = () => {
   myName = 'bob'
-  send({ type: 'join', name: myName })
+  send({ type: 'join', name: myName, character: 1 })
 }
 
 socket.onmessage = (event) => {

@@ -188,9 +188,68 @@ button:disabled {
   height: 40px;
   border-radius: 12px;
   background-color: var(--fill);
-  background-position: center 20%;
-  background-size: 160%; /* zoom on the head */
+  background-position: 50% 6%;
+  background-size: 190%; /* zoom on the head */
   background-repeat: no-repeat;
+}
+
+/* Character picker on the nickname screen */
+.picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.pick {
+  aspect-ratio: 1;
+  min-height: 0;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 18px;
+  background: var(--fill) center 85% / 88% no-repeat;
+  box-shadow: none;
+  transition: transform 0.15s, border-color 0.15s, background-color 0.15s;
+}
+
+.pick:hover {
+  filter: none;
+  transform: translateY(-3px);
+}
+
+.pick:active {
+  box-shadow: none;
+  transform: none;
+}
+
+.pick.picked {
+  border-color: var(--accent);
+  background-color: #3a3322;
+  transform: translateY(-3px) scale(1.04);
+}
+
+/* The characters players can pick (after .pick, so the picture wins) */
+.c1 {
+  background-image: url(characters/1.webp);
+}
+
+.c2 {
+  background-image: url(characters/2.webp);
+}
+
+.c3 {
+  background-image: url(characters/3.webp);
+}
+
+.c4 {
+  background-image: url(characters/4.webp);
+}
+
+.c5 {
+  background-image: url(characters/5.webp);
+}
+
+.c6 {
+  background-image: url(characters/6.webp);
 }
 
 .p1 {

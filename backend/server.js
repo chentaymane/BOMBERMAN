@@ -33,7 +33,7 @@ const server = http.createServer((req, res) => {
 })
 
 // Messages from the client:
-//   { "type": "join", "name": "bob" }
+//   { "type": "join", "name": "bob", "character": 2 }
 //   { "type": "move", "move": "up" | "down" | "left" | "right" | "bomb" }
 //   { "type": "chat", "text": "hello" }
 function onMessage(client, text) {
@@ -56,7 +56,7 @@ function onMessage(client, text) {
   if (!msg || typeof msg !== 'object' || Array.isArray(msg)) return
 
   try {
-    if (msg.type === 'join') game.join(client, msg.name)
+    if (msg.type === 'join') game.join(client, msg.name, msg.character)
     else if (msg.type === 'move') game.queueMove(client, msg.move)
     else if (msg.type === 'chat') game.chat(client, msg.text)
   } catch (err) {
