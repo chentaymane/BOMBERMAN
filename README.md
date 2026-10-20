@@ -6,13 +6,13 @@ The game is drawn with plain DOM elements, using our own [mini-framework](fronte
 
 ## Features
 
-- **Nickname page**, then a **waiting room** with a player counter (up to 4 players).
+- **Nickname page** where each player also picks one of 6 characters (two players can not take the same one), then a **waiting room** with a player counter (up to 4 players).
 - **Lobby timers**: when 2 players are in, a 20 s wait starts for more players. Then a 10 s countdown starts the game. With 4 players, the countdown starts right away.
 - **Map**: 15 × 13 cells. Walls never move; blocks are placed at random. Every player starts in a corner with room to escape their first bomb.
 - **3 lives** per player, and **power-ups** that may appear when a block is destroyed.
 - **Chat** for all players, in the waiting room and during the game.
 - **60 FPS**: a `requestAnimationFrame` game loop, at most one render per frame, players moved with CSS `transform`, and an FPS counter on screen.
-- **Classic Bomberman look**: a textured map (grass, stone, bricks), the Bomberman characters with name tags, cross-shaped explosions, and a dark, rounded game interface.
+- **Classic Bomberman look**: a textured map (grass, stone, bricks), the picked characters with name tags, cross-shaped explosions, and a dark, rounded game interface.
 
 ## Requirements
 
@@ -29,7 +29,7 @@ npm start
 
 `npm install` is only needed the first time.
 
-Open http://localhost:8080 in 2 to 4 browser tabs, enter a nickname in each one, and wait for the countdown.
+Open http://localhost:8080 in 2 to 4 browser tabs, enter a nickname and pick a character in each one, and wait for the countdown.
 
 Friends on the same network can join at `http://<your-computer-ip>:8080`. To use another port, set the `PORT` environment variable.
 
@@ -61,7 +61,8 @@ backend/
 frontend/
   index.html      the page
   style.css       design: dark game theme, map, players, chat
-  textures/       SVG textures: floor, wall, brick, bomb and the 4 players
+  textures/       SVG textures: floor, wall, brick and bomb
+  characters/     the 6 characters players can pick (1.webp to 6.webp)
   app.js          entry point: server messages, screens, game loop
   socket.js       WebSocket connection
   store.js        app state
@@ -81,7 +82,7 @@ frontend/
 
 ## Design
 
-- **Classic map** drawn with small SVG textures (no canvas): grass floor, stone walls, brick blocks, bombs, and the 4 classic Bomberman characters (white, black, red and blue).
+- **Classic map** drawn with small SVG textures (no canvas): grass floor, stone walls, brick blocks and bombs. The 6 characters are pictures with a transparent background, drawn a bit taller than a cell with their feet on it, like classic game sprites.
 - **Smooth movement**: a player slides to the next cell in exactly the server's move delay, so holding a key looks like one continuous walk. Explosions are drawn as a cross from the cells that are on fire.
 - **Dark, rounded interface** with the [Fredoka](https://fonts.google.com/specimen/Fredoka) font (the system font is used when offline).
 - **Readable**: text contrast is at least 6.5:1, buttons and fields are at least 46 px tall, every control has a visible focus ring, and players are told apart by their name tag, not only by color.
