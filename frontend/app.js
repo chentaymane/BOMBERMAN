@@ -34,7 +34,7 @@ function onMessage(msg) {
 connect(
   onMessage,
   () => store.setState({ connected: true }),
-  () => store.setState({ connected: false, screen: 'login', error: 'No connection to the server. Start the backend and refresh.' }),
+  () => store.setState({ connected: false, screen: 'login', error: "Can't reach the server. Start the backend, then reload this page." }),
 )
 
 function view(s) {
