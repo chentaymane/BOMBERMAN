@@ -1,5 +1,6 @@
-// One WebSocket to the backend (all messages are explained in backend/API.md)
-const SERVER = 'ws://' + (location.hostname || 'localhost') + ':8080'
+// One WebSocket to the backend, the same server that sends this page
+// (all messages are explained in backend/API.md)
+const SERVER = 'ws://' + location.host
 let socket = null
 
 export function connect(onMessage, onOpen, onClose) {

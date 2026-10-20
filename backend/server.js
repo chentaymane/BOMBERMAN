@@ -1,5 +1,7 @@
-// Bomberman backend: one WebSocket on ws://localhost:8080
+// Bomberman backend: serves the frontend and one WebSocket on http://localhost:8080
 const http = require('http')
+const fs = require('fs')
+const path = require('path')
 const ws = require('./ws')
 const game = require('./game')
 
@@ -7,12 +9,28 @@ const PORT = process.env.PORT || 8080
 const MAX_CONNECTIONS = 50
 const MAX_MESSAGES_PER_SECOND = 60 // extra messages are ignored
 const KICK_MESSAGES_PER_SECOND = 200 // spammer gets disconnected
+const FRONTEND = path.join(__dirname, '..', 'frontend')
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' }
 
 let connections = 0
 
+// Send the frontend files (only html, js and css from the frontend folder)
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' })
-  res.end('Bomberman server running. Connect with WebSocket.')
+  const url = req.url.split('?')[0]
+  const file = path.join(FRONTEND, url === '/' ? 'index.html' : url)
+  const type = TYPES[path.extname(file)]
+  if (!type || !file.startsWith(FRONTEND + path.sep)) {
+    res.writeHead(404)
+    return res.end('Not found')
+  }
+  fs.readFile(file, (err, data) => {
+    if (err) {
+      res.writeHead(404)
+      return res.end('Not found')
+    }
+    res.writeHead(200, { 'Content-Type': type })
+    res.end(data)
+  })
 })
 
 // Messages from the client:
