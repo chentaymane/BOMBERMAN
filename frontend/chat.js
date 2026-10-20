@@ -10,21 +10,33 @@ function sendChat(e) {
   store.setState({ draft: '' })
 }
 
+// Like Messages: my bubbles on the right in blue, the others on the left with their name.
 // Messages are stored newest first and shown with column-reverse,
 // so the list always stays scrolled to the newest message.
 // Text is only added as text nodes, never as HTML.
+function messageView(m, me) {
+  const mine = m.from === me
+  return h('li', { key: m.id, class: mine ? 'message mine' : 'message' },
+    !mine && h('span', { class: 'from' }, m.from),
+    h('span', { class: 'bubble' }, m.text),
+  )
+}
+
 export function chatView(s) {
-  return h('div', { class: 'chat' },
+  return h('section', { class: 'chat', 'aria-label': 'Chat' },
     h('h2', {}, 'Chat'),
-    h('ul', { class: 'messages' }, s.messages.map((m) => h('li', { key: m.id }, h('b', {}, m.from + ': '), m.text))),
-    h('form', { onSubmit: sendChat },
+    s.messages.length
+      ? h('ul', { class: 'messages', 'aria-live': 'polite' }, s.messages.map((m) => messageView(m, s.me)))
+      : h('p', { class: 'messages empty secondary' }, 'No messages yet. Say hi to the other players!'),
+    h('form', { class: 'composer', onSubmit: sendChat },
       h('input', {
-        placeholder: 'Say something...',
+        'aria-label': 'Message',
+        placeholder: 'Message',
         maxlength: 200,
         value: s.draft,
         onInput: (e) => store.setState({ draft: e.target.value }),
       }),
-      h('button', { type: 'submit' }, 'Send'),
+      h('button', { type: 'submit', disabled: !s.draft.trim() }, 'Send'),
     ),
   )
 }

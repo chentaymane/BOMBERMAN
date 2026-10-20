@@ -263,37 +263,83 @@ button:disabled {
   padding: 24px;
 }
 
-/* Chat */
+/* Chat: as tall as the screen next to it, at least 420px */
 .chat {
-  width: 280px;
-  height: 420px;
-  padding: 12px;
-  border-radius: 12px;
-  background: #2a2a3d;
+  width: min(320px, calc(100vw - 48px));
+  min-height: 420px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .messages {
-  flex: 1;
+  flex: 1 1 0;
+  min-height: 0;
   margin: 0;
   padding: 0;
   list-style: none;
   overflow-y: auto;
   display: flex;
   flex-direction: column-reverse;
-  word-break: break-word;
-}
-
-.chat form {
-  display: flex;
   gap: 6px;
 }
 
-.chat input {
+.messages.empty {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 0.9375rem;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.message.mine {
+  align-items: flex-end;
+}
+
+.from {
+  padding: 0 12px;
+  color: var(--label-2);
+  font-size: 0.75rem;
+}
+
+.bubble {
+  max-width: 85%;
+  padding: 7px 12px;
+  border-radius: 18px;
+  background: var(--fill);
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.mine .bubble {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+}
+
+.composer input {
   flex: 1;
   min-width: 0;
+  border-radius: 999px;
+}
+
+.composer button {
+  padding: 0 16px;
 }
 
 /* Board */
