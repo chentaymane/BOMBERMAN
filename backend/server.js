@@ -11,9 +11,9 @@ const MAX_MESSAGE_SIZE = 4096 // bigger messages close the connection
 const MAX_MESSAGES_PER_SECOND = 60 // extra messages are ignored
 const KICK_MESSAGES_PER_SECOND = 200 // spammer gets disconnected
 const FRONTEND = path.join(__dirname, '..', 'frontend')
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml' }
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.webp': 'image/webp' }
 
-// Send the frontend files (only html, js, css and svg from the frontend folder)
+// Send the frontend files (only html, js, css and images from the frontend folder)
 const server = http.createServer((req, res) => {
   const url = req.url.split('?')[0]
   const file = path.join(FRONTEND, url === '/' ? 'index.html' : url)
