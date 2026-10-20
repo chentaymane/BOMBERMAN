@@ -12,7 +12,7 @@ The game is drawn with plain DOM elements, using our own [mini-framework](fronte
 - **3 lives** per player, and **power-ups** that may appear when a block is destroyed.
 - **Chat** for all players, in the waiting room and during the game.
 - **60 FPS**: a `requestAnimationFrame` game loop, at most one render per frame, players moved with CSS `transform`, and an FPS counter on screen.
-- **Apple-style design**: light and dark mode, system font, readable contrast, keyboard-only play, and support for the "reduce motion", "reduce transparency" and "increase contrast" system settings.
+- **Classic Bomberman look**: a textured map (grass, stone, bricks), the Bomberman characters with name tags, cross-shaped explosions, and a dark, rounded game interface.
 
 ## Requirements
 
@@ -39,7 +39,7 @@ Friends on the same network can join at `http://<your-computer-ip>:8080`. To use
 | Esc | Leave the chat field and go back to the game |
 
 - A bomb explodes after 3 s. Its flames go in 4 directions and stop at walls and blocks.
-- If the flames touch you, you lose a life. You go back to your corner and are protected for 2 s (dashed ring around your player).
+- If the flames touch you, you lose a life. You go back to your corner and are protected for 2 s (your player blinks).
 - With 0 lives you are out, but you can still watch and chat.
 
 | Power-up | Effect |
@@ -58,7 +58,8 @@ backend/
   API.md          every message between the browser and the server
 frontend/
   index.html      the page
-  style.css       design (colors for light and dark mode, board, chat)
+  style.css       design: dark game theme, map, players, chat
+  textures/       SVG textures: floor, wall, brick, bomb and the 4 players
   app.js          entry point: server messages, screens, game loop
   socket.js       WebSocket connection
   store.js        app state
@@ -78,13 +79,11 @@ frontend/
 
 ## Design
 
-The interface follows Apple's [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines):
-
-- Colors are named by role (`--label`, `--surface`, `--accent`…) and have light and dark versions that follow the system setting.
-- All text has a contrast of at least 4.5:1, and player initials (bold) at least 3:1.
-- Buttons and fields are at least 44 px tall, and every control has a visible focus ring.
-- Information never relies on color alone: players also show their initial, and protected players get a dashed ring.
-- The only glass (blur) effect is the floating game-over panel. It turns solid when transparency is reduced.
+- **Classic map** drawn with small SVG textures (no canvas): grass floor, stone walls, brick blocks, bombs, and the 4 classic Bomberman characters (white, black, red and blue).
+- **Smooth movement**: a player slides to the next cell in exactly the server's move delay, so holding a key looks like one continuous walk. Explosions are drawn as a cross from the cells that are on fire.
+- **Dark, rounded interface** with the [Fredoka](https://fonts.google.com/specimen/Fredoka) font (the system font is used when offline).
+- **Readable**: text contrast is at least 6.5:1, buttons and fields are at least 46 px tall, every control has a visible focus ring, and players are told apart by their name tag, not only by color.
+- **System settings**: "reduce motion" turns off the animations and the slide, and "increase contrast" makes secondary text and borders stronger.
 
 ## Authors
 
