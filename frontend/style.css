@@ -171,25 +171,96 @@ button:disabled {
   color: var(--label-2);
 }
 
-.counter {
-  margin: 0;
-  font-size: 48px;
-  font-weight: bold;
+/* Player colors (Apple system colors). Initials are bold, so 3:1 is enough (lowest: 3.55:1) */
+.p1 {
+  background: #ff3b30;
 }
 
-.list {
+.p2 {
+  background: #007aff;
+}
+
+.p3 {
+  background: #ffcc00;
+  color: #1d1d1f;
+}
+
+.p4 {
+  background: #af52de;
+}
+
+.avatar {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+/* Waiting room */
+.slots {
   margin: 0;
   padding: 0;
   list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
+.slot {
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--fill);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.slot-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slot.empty {
+  background: none;
+  border: 1.5px dashed var(--separator);
+  color: var(--label-2);
+  font-weight: 400;
+}
+
+.slot.empty .avatar {
+  border: 1.5px dashed var(--separator);
+}
+
+.progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--fill);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  transition: transform 1s linear;
+}
+
+/* Page layout: screen on the left, chat on the right (stacked on small windows) */
 .layout {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 16px;
+  gap: 24px;
+  padding: 24px;
 }
 
 /* Chat */
@@ -345,23 +416,6 @@ button:disabled {
   50% {
     opacity: 0.2;
   }
-}
-
-.p1 {
-  background: #e53935;
-}
-
-.p2 {
-  background: #1e88e5;
-}
-
-.p3 {
-  background: #fdd835;
-  color: #222;
-}
-
-.p4 {
-  background: #8e24aa;
 }
 
 /* Players info under the board */
