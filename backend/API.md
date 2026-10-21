@@ -30,18 +30,31 @@ socket.onmessage = (event) => {
 
 Only 3 types exist. Anything else is ignored.
 
-### 1. Join with a nickname and a character
+### 1. Join with a nickname (character optional)
 
 ```js
-send({ type: 'join', name: 'bob', character: 2 })
+send({ type: 'join', name: 'bob' })              // random free character
+send({ type: 'join', name: 'bob', character: 2 }) // a wanted one
 ```
 
 - Name: 1–15 characters. Only letters, numbers, spaces, `_` and `-` are allowed.
 - Names must be unique, ignoring case (`Bob` and `bob` are the same).
 - Character: a number from 1 to 6 (the pictures in `frontend/characters`). Two players can not pick the same one.
+- **Without a character you get a random free one right away** (any invalid value also means "no choice"). The assigned character is in the answer (`joined`) and can be changed in the waiting room.
 - Joining only works while players are waiting (lobby or countdown), with a maximum of 4 players.
 
-### 2. Move or drop a bomb
+### 2. Change character in the waiting room
+
+```js
+send({ type: 'pick', character: 3 })
+```
+
+- Only while waiting (lobby or countdown). Once the game starts the character is locked.
+- Characters already taken by another player are refused with `Character taken, pick another one` and stay locked for everybody.
+- A `pick` is answered with a `joined` message (your character), and the new `lobby` is sent to all players.
+- The `lobby` message lists `taken`, the characters that are locked, so the picker can grey them out.
+
+### 3. Move or drop a bomb
 
 ```js
 send({ type: 'move', move: 'up' })   // 'up' | 'down' | 'left' | 'right' | 'bomb'
@@ -49,11 +62,10 @@ send({ type: 'move', move: 'up' })   // 'up' | 'down' | 'left' | 'right' | 'bomb
 
 - Send **only the direction**. Never send a position: the server knows where you are and checks every move against the real map.
 - Moves that are not possible are ignored (wall, block, bomb, too fast, dead player).
-- The server waits a short time between two moves of the same player (200ms, less with speed power-ups). Sending faster does nothing, except one move is kept and played when the wait is over.
-- Send a move on `keydown`, and again on key repeat while the key is held. **Do not send a move on every frame.**
+- The server waits a short time between two moves of the same player (200 ms, less with speed power-ups). Sending faster does nothing, except one move that arrives a few ms early is kept and played when the wait is over.
+- Send **one move per key press** and ignore key repeat (`e.repeat`): holding a key does not keep moving. **Do not send a move on every frame.**
 
-### 3. Chat
-
+### 4. Chat
 ```js
 send({ type: 'chat', text: 'hello' })
 ```
@@ -71,7 +83,7 @@ send({ type: 'chat', text: 'hello' })
 { "type": "joined", "name": "bob", "character": 2 }
 ```
 
-Show the waiting page.
+Show the waiting page. Sent again after every `pick`, with the new `character`.
 
 ### `error`: something was refused
 
@@ -79,19 +91,20 @@ Show the waiting page.
 { "type": "error", "message": "Nickname taken" }
 ```
 
-Possible messages: `Nickname required`, `Nickname: 1-15 letters, numbers, space, _ or -`, `Nickname taken`, `Pick a character`, `Character taken, pick another one`, `Game is full`, `Game already started`.
+Possible messages: `Nickname required`, `Nickname: 1-15 letters, numbers, space, _ or -`, `Nickname taken`, `Character taken, pick another one`, `No character left`, `Join first`, `Game is full`, `Game already started`.
 
 ### `lobby`: waiting room info
 
-Sent each time something changes (player joins or leaves, a second passes).
+Sent each time something changes (player joins or leaves, a second passes, someone picks).
 
 ```json
-{ "type": "lobby", "players": [{ "name": "bob", "character": 2 }, { "name": "alice", "character": 5 }], "waitSeconds": 17, "countdown": null }
+{ "type": "lobby", "players": [{ "name": "bob", "character": 2 }, { "name": "alice", "character": 5 }], "taken": [2, 5], "waitSeconds": 17, "countdown": null }
 ```
 
 | field         | meaning                                                           |
 |---------------|-------------------------------------------------------------------|
 | `players`     | players in the lobby (name and character) → counter = `players.length` |
+| `taken`       | characters already locked (same order as `players`) → grey these out in the picker |
 | `waitSeconds` | seconds left of the 20s wait for more players, `null` if not running |
 | `countdown`   | seconds left of the 10s "get ready" timer, `null` if not running  |
 
@@ -123,8 +136,8 @@ Sent while the game runs, only when something changed.
 
 | symbol         | meaning                                     |
 |----------------|---------------------------------------------|
-| `#`            | wall (can never be destroyed)               |
-| `B`            | block (destroyed by bombs)                  |
+| `#`            | wall (never destroyed, stops flames)        |
+| `B`            | block (destroyed by flames, flames stop)    |
 | `.`            | empty                                       |
 | `X`            | bomb                                        |
 | `F`            | fire / explosion                            |
@@ -177,23 +190,27 @@ let myName = ''
 
 socket.onopen = () => {
   myName = 'bob'
-  send({ type: 'join', name: myName, character: 1 })
+  send({ type: 'join', name: myName }) // or { name, character: 1 } to choose
 }
 
 socket.onmessage = (event) => {
   const msg = JSON.parse(event.data)
   switch (msg.type) {
-    case 'joined': /* show waiting page */ break
+    case 'joined': /* show waiting page, msg.character is mine */ break
     case 'error':  alert(msg.message); break
-    case 'lobby':  /* show msg.players.length, msg.waitSeconds, msg.countdown */ break
+    case 'lobby':  /* show msg.players.length; grey out msg.taken in the picker */ break
     case 'state':  /* draw msg.map, msg.bombs, HUD from msg.players */ break
     case 'chat':   /* add msg.from + msg.text with textContent */ break
     case 'over':   /* show msg.winner */ break
   }
 }
 
+// Change character while waiting (refused with an 'error' if somebody took it)
+send({ type: 'pick', character: 4 })
+
 const keys = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', ' ': 'bomb' }
 document.addEventListener('keydown', (e) => {
+  if (e.repeat) return // one move per press, holding does nothing
   if (keys[e.key]) send({ type: 'move', move: keys[e.key] })
 })
 ```

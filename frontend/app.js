@@ -5,7 +5,7 @@ import { loginView } from './login.js'
 import { lobbyView } from './lobby.js'
 import { chatView } from './chat.js'
 import { gameView } from './game.js'
-import { repeatMove } from './controls.js'
+import './controls.js' // registers the arrow keys and space (side effect only)
 
 let chatId = 0
 let nextGame = null // newest game state, drawn on the next frame
@@ -13,12 +13,18 @@ let nextGame = null // newest game state, drawn on the next frame
 function onMessage(msg) {
   switch (msg.type) {
     case 'joined':
-      return store.setState({ screen: 'lobby', me: msg.name, error: '' })
+      // Also sent after a 'pick': the character the server really assigned
+      return store.setState((s) => ({
+        screen: s.screen === 'login' ? 'lobby' : s.screen,
+        me: msg.name,
+        myCharacter: msg.character,
+        error: '',
+      }))
     case 'error':
       return store.setState({ error: msg.message })
     case 'lobby':
       nextGame = null
-      return store.setState({ screen: 'lobby', lobby: msg, game: null, over: false, winner: null })
+      return store.setState({ screen: 'lobby', lobby: msg, game: null, over: false, winner: null, error: '' })
     case 'state':
       nextGame = msg
       return
@@ -53,8 +59,6 @@ function loop(now) {
     store.setState({ screen: 'game', game: nextGame })
     nextGame = null
   }
-  repeatMove(now)
-
   // Count frames, show the FPS once per second
   frames++
   if (now - fpsStart >= 1000) {

@@ -42,8 +42,9 @@ function tilesView(game) {
 const lastPos = {}
 
 // Moved with transform only (--cell is the tile size from style.css).
-// The slide lasts as long as the server's move delay: 200 ms, 30 ms less per speed power-up
-// (MOVE_DELAY and SPEED_STEP in backend/game.js), so holding a key looks like one smooth walk.
+// The slide lasts exactly as long as the click debounce on the server:
+// 200 ms, 30 ms less per speed power-up (MOVE_DELAY and SPEED_STEP in
+// backend/game.js), so each step lands when the next key press is allowed.
 function playerView(p, me) {
   const prev = lastPos[p.id]
   const respawn = prev && Math.abs(prev.x - p.x) + Math.abs(prev.y - p.y) > 1
@@ -99,7 +100,7 @@ function overView(s, game) {
 
 // Never changes, so it is built once and the framework always skips it
 const hint = h('p', { class: 'hint' },
-  h('span', {}, h('kbd', {}, '← ↑ → ↓'), 'Move'),
+  h('span', {}, h('kbd', {}, '← ↑ → ↓'), 'Move (one step per press)'),
   h('span', {}, h('kbd', {}, 'Space'), 'Drop a bomb'),
   h('span', {}, h('kbd', {}, 'Esc'), 'Leave the chat'),
 )

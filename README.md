@@ -6,7 +6,7 @@ The game is drawn with plain DOM elements, using our own [mini-framework](fronte
 
 ## Features
 
-- **Nickname page** where each player also picks one of 6 characters (two players can not take the same one), then a **waiting room** with a player counter (up to 4 players).
+- **Nickname page** where each player enters a name, then a **waiting room** with a player counter (up to 4 players). Everyone gets a **random free character** and can change it there: a character is locked for the others as soon as somebody takes it.
 - **Lobby timers**: when 2 players are in, a 20 s wait starts for more players. Then a 10 s countdown starts the game. With 4 players, the countdown starts right away.
 - **Map**: 15 × 13 cells. Walls never move; blocks are placed at random. Every player starts in a corner with room to escape their first bomb.
 - **3 lives** per player, and **power-ups** that may appear when a block is destroyed.
@@ -37,11 +37,13 @@ Friends on the same network can join at `http://<your-computer-ip>:8080`. To use
 
 | Key | Action |
 | --- | --- |
-| Arrow keys | Move (hold to keep moving) |
+| Arrow keys | Move one cell per press |
 | Space | Drop a bomb |
 | Esc | Leave the chat field and go back to the game |
 
-- A bomb explodes after 3 s. Its flames go in 4 directions and stop at walls and blocks.
+- A bomb explodes after 3 s. Its flames go in 4 directions and stop at walls, bricks and bombs.
+- Flames destroy **bricks** and **players**, and nothing else: power-ups lying on the ground are never burned and the flame goes right over them.
+- A bomb hit by a flame is not set off: there are **no chain reactions**.
 - If the flames touch you, you lose a life. You go back to your corner and are protected for 2 s (your player blinks).
 - With 0 lives you are out, but you can still watch and chat.
 
@@ -83,7 +85,7 @@ frontend/
 ## Design
 
 - **Classic map** drawn with small SVG textures (no canvas): grass floor, stone walls, brick blocks and bombs. The 6 characters are pictures with a transparent background, drawn a bit taller than a cell with their feet on it, like classic game sprites.
-- **Smooth movement**: a player slides to the next cell in exactly the server's move delay, so holding a key looks like one continuous walk. Explosions are drawn as a cross from the cells that are on fire.
+- **Smooth movement**: one key press moves one cell, and the slide lasts exactly as long as the click debounce (200 ms, 30 ms less per ⚡ Speed), so each step lands when the next press is allowed. Explosions are drawn as a cross from the cells that are on fire.
 - **Dark, rounded interface** with the [Fredoka](https://fonts.google.com/specimen/Fredoka) font (the system font is used when offline).
 - **Readable**: text contrast is at least 6.5:1, buttons and fields are at least 46 px tall, every control has a visible focus ring, and players are told apart by their name tag, not only by color.
 - **System settings**: "reduce motion" turns off the animations and the slide, and "increase contrast" makes secondary text and borders stronger.

@@ -4,10 +4,10 @@ export const store = createStore({
   screen: 'login', // 'login' | 'lobby' | 'game'
   connected: false,
   name: '', // nickname input
-  character: null, // picked character (1 to 6, pictures in characters/)
   me: '', // nickname accepted by the server
+  myCharacter: null, // character the server assigned me (1 to 6)
   error: '',
-  lobby: { players: [], waitSeconds: null, countdown: null },
+  lobby: { players: [], taken: [], waitSeconds: null, countdown: null },
   game: null, // last 'state' message from the server
   over: false, // game finished
   winner: null, // winner name, null if nobody survived

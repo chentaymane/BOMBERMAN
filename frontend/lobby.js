@@ -1,4 +1,44 @@
 import { h } from './framework/index.js'
+import { store } from './store.js'
+import { send } from './socket.js'
+
+// One name per picture: characters/1.webp .. characters/6.webp
+const CHARACTERS = ['Glasses', 'Red cap', 'Grey tracksuit', 'Black tracksuit', 'Sunglasses', 'Fighter']
+
+// My character, from the last lobby message (the server is the source of truth)
+function myCharacter(players, me) {
+  const mine = players.find((p) => p.name === me)
+  return mine ? mine.character : null
+}
+
+// Pick a character: locked ones are disabled, mine is marked as picked.
+// A pick that just became impossible is refused by the server with an error.
+function pickerView(s) {
+  const { players } = s.lobby
+  const me = myCharacter(players, s.me)
+  const free = players.map((p) => p.character)
+
+  return h('div', { class: 'field' },
+    h('span', { class: 'field-label' }, 'Your character'),
+    h('div', { class: 'picker', role: 'radiogroup', 'aria-label': 'Character' },
+      CHARACTERS.map((label, i) => {
+        const value = i + 1
+        const picked = me === value
+        const locked = !picked && free.includes(value)
+        return h('button', {
+          type: 'button',
+          class: `pick c${value}${picked ? ' picked' : ''}${locked ? ' locked' : ''}`,
+          role: 'radio',
+          'aria-checked': picked ? 'true' : 'false',
+          'aria-label': locked ? label + ' (taken)' : label,
+          title: locked ? label + ' — taken' : label,
+          disabled: locked,
+          onClick: () => send({ type: 'pick', character: value }),
+        })
+      }),
+    ),
+  )
+}
 
 // One slot per player, with the character they picked
 function slotView(player, me) {
@@ -33,5 +73,7 @@ export function lobbyView(s) {
     left != null && h('div', { class: 'progress', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': total, 'aria-valuenow': left },
       h('div', { class: 'progress-bar', style: { transform: `scaleX(${left / total})` } }),
     ),
+    pickerView(s),
+    s.error && h('p', { class: 'error', role: 'alert' }, s.error),
   )
 }

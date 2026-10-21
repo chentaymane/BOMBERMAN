@@ -17,12 +17,12 @@ const OVER_TIME = 5000 // show winner, then back to lobby (ms)
 const BOMB_TIME = 3000 // bomb explodes after (ms)
 const FIRE_TIME = 500 // flames stay (ms)
 const SAFE_TIME = 2000 // invincible after losing a life (ms)
-const MOVE_DELAY = 200 // ms between moves
-const SPEED_STEP = 30 // each speed power up removes this from MOVE_DELAY
+const MOVE_DELAY = 200 // click debounce: ms between moves, speed power ups shorten it
+const SPEED_STEP = 30 // each speed power up removes this from the debounce
 const MAX_BOMBS = 8
 const MAX_RANGE = 8
 const MAX_SPEED = 4
-const CHAT_DELAY = 300 // ms between chat messages
+const MAX_POWERUPS = 5 // total power-ups a player can collect (bombs + flames + speed)
 const NAME_RULE = /^[\p{L}\p{N} _-]{1,15}$/u
 const CHARACTERS = 6 // pictures in frontend/characters (1 to 6)
 
@@ -103,6 +103,15 @@ function broadcast(message) {
   for (const p of players) p.client.send(text)
 }
 
+// Send the lobby message right away (a pick must be seen before the next tick)
+function broadcastLobby() {
+  const text = JSON.stringify(currentMessage(Date.now()))
+  for (const p of players) {
+    lastSent.set(p.client, text)
+    p.client.send(text)
+  }
+}
+
 function findPlayer(client) {
   return players.find((p) => p.client === client)
 }
@@ -125,6 +134,15 @@ function cleanText(text, max) {
 }
 
 // ----- Lobby -----
+function randomFreeCharacter() {
+  const taken = new Set(players.map((p) => p.character))
+  const free = []
+  for (let c = 1; c <= CHARACTERS; c++) if (!taken.has(c)) free.push(c)
+  return free.length ? free[Math.floor(Math.random() * free.length)] : null
+}
+
+// join(client, name, character): character is optional (0, null, undefined or a
+// string also mean "no choice"), then a random free one is assigned
 function join(client, name, character) {
   if (findPlayer(client)) return
   if (typeof name !== 'string') return send(client, { type: 'error', message: 'Nickname required' })
@@ -132,21 +150,40 @@ function join(client, name, character) {
   if (!NAME_RULE.test(name)) {
     return send(client, { type: 'error', message: 'Nickname: 1-15 letters, numbers, space, _ or -' })
   }
-  if (!Number.isInteger(character) || character < 1 || character > CHARACTERS) {
-    return send(client, { type: 'error', message: 'Pick a character' })
-  }
   if (phase !== 'lobby' && phase !== 'countdown') return send(client, { type: 'error', message: 'Game already started' })
   if (players.length >= MAX_PLAYERS) return send(client, { type: 'error', message: 'Game is full' })
   if (players.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
     return send(client, { type: 'error', message: 'Nickname taken' })
   }
-  if (players.some((p) => p.character === character)) {
+
+  // A wanted character is only a wish: it may be taken in the meantime
+  const wants = Number.isInteger(character) && character >= 1 && character <= CHARACTERS ? character : null
+  if (wants && players.some((p) => p.character === wants)) {
     return send(client, { type: 'error', message: 'Character taken, pick another one' })
   }
+  const picked = wants || randomFreeCharacter()
+  if (!picked) return send(client, { type: 'error', message: 'No character left' })
 
-  players.push({ client, name, character, lives: 0, lastChatAt: 0 })
-  send(client, { type: 'joined', name, character })
+  players.push({ client, name, character: picked, lives: 0, lastChatAt: 0 })
+  send(client, { type: 'joined', name, character: picked })
   checkLobby()
+}
+
+// Change character while waiting. The character stays locked for the others.
+function pick(client, character) {
+  const p = findPlayer(client)
+  if (!p) return send(client, { type: 'error', message: 'Join first' })
+  if (phase !== 'lobby' && phase !== 'countdown') {
+    return send(client, { type: 'error', message: 'Game already started' })
+  }
+  if (!Number.isInteger(character) || character < 1 || character > CHARACTERS) return
+  if (p.character === character) return
+  if (players.some((other) => other.character === character)) {
+    return send(client, { type: 'error', message: 'Character taken, pick another one' })
+  }
+  p.character = character
+  send(client, { type: 'joined', name: p.name, character })
+  broadcastLobby()
 }
 
 function checkLobby() {
@@ -174,6 +211,7 @@ function startGame() {
     p.maxBombs = 1
     p.range = 1
     p.speed = 0
+    p.totalPups = 0 // total collected power-ups (bombs+flames+speed)
     p.nextMoveAt = 0
     p.safeUntil = 0
     p.wantedMove = null
@@ -238,10 +276,23 @@ function tryMove(p, [dx, dy], now) {
   p.y = y
   p.nextMoveAt = now + MOVE_DELAY - p.speed * SPEED_STEP
 
-  if (tile === POWER_BOMB) p.maxBombs = Math.min(MAX_BOMBS, p.maxBombs + 1)
-  if (tile === POWER_FLAME) p.range = Math.min(MAX_RANGE, p.range + 1)
-  if (tile === POWER_SPEED) p.speed = Math.min(MAX_SPEED, p.speed + 1)
-  if (isPowerUp(tile)) tiles[y][x] = EMPTY
+  if (tile === POWER_BOMB && p.totalPups < MAX_POWERUPS) {
+    p.maxBombs = Math.min(MAX_BOMBS, p.maxBombs + 1)
+    p.totalPups++
+    tiles[y][x] = EMPTY
+  }
+  if (tile === POWER_FLAME && p.totalPups < MAX_POWERUPS) {
+    p.range = Math.min(MAX_RANGE, p.range + 1)
+    p.totalPups++
+    tiles[y][x] = EMPTY
+  }
+  if (tile === POWER_SPEED && p.totalPups < MAX_POWERUPS) {
+    p.speed = Math.min(MAX_SPEED, p.speed + 1)
+    p.totalPups++
+    tiles[y][x] = EMPTY
+  } else if (isPowerUp(tile)) {
+    tiles[y][x] = EMPTY // ignore if over limit
+  }
 }
 
 function placeBomb(p, now) {
@@ -259,26 +310,24 @@ function explode(bomb, now) {
     for (let i = 1; i <= bomb.range; i++) {
       const x = bomb.x + dx * i
       const y = bomb.y + dy * i
-      if (!inside(x, y) || tiles[y][x] === WALL) break
+      if (!inside(x, y)) break
 
       const tile = tiles[y][x]
-      const alreadyBurning = fireUntil[y][x] > now
+      if (tile === WALL) break // solid: the flame stops here
+
+      // A bomb is solid: the flame stops, but does NOT set it off (no chain reaction)
+      if (bombAt(x, y)) {
+        fireUntil[y][x] = until
+        break
+      }
+
       fireUntil[y][x] = until
 
       if (tile === BLOCK) {
-        tiles[y][x] = randomPowerUp() // fire stops at the block
-        break
+        tiles[y][x] = randomPowerUp() // the brick is destroyed, an item may appear
+        break // fire stops at the brick
       }
-      if (isPowerUp(tile)) {
-        // Burn old power ups, but not one that just came out of a block
-        if (!alreadyBurning) tiles[y][x] = EMPTY
-        break
-      }
-      const other = bombAt(x, y)
-      if (other) {
-        other.explodeAt = 0 // chain reaction, it explodes this tick
-        break
-      }
+      // Power-ups are not destroyed: the flame passes over them and keeps going
     }
   }
 }
@@ -335,6 +384,8 @@ function currentMessage(now) {
     return {
       type: 'lobby',
       players: players.map((p) => ({ name: p.name, character: p.character })),
+      // Characters already locked by a player, so the waiting room can grey them out
+      taken: players.map((p) => p.character),
       waitSeconds: waitEndsAt ? Math.max(0, Math.ceil((waitEndsAt - now) / 1000)) : null,
       countdown: phase === 'countdown' ? Math.max(0, Math.ceil((startsAt - now) / 1000)) : null,
     }
@@ -376,4 +427,4 @@ function tick() {
 
 setInterval(tick, TICK)
 
-module.exports = { join, leave, queueMove, chat }
+module.exports = { join, leave, queueMove, chat, pick }
