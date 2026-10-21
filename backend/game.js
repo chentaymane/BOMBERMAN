@@ -23,6 +23,7 @@ const MAX_BOMBS = 8
 const MAX_RANGE = 8
 const MAX_SPEED = 4
 const MAX_POWERUPS = 5 // total power-ups a player can collect (bombs + flames + speed)
+const CHAT_DELAY = 300 // ms between chat messages
 const NAME_RULE = /^[\p{L}\p{N} _-]{1,15}$/u
 const CHARACTERS = 6 // pictures in frontend/characters (1 to 6)
 
