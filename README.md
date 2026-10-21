@@ -37,7 +37,7 @@ Friends on the same network can join at `http://<your-computer-ip>:8080`. To use
 
 | Key | Action |
 | --- | --- |
-| Arrow keys | Move one cell per press |
+| Arrow keys | Move (hold to keep moving) |
 | Space | Drop a bomb |
 | Esc | Leave the chat field and go back to the game |
 
@@ -85,7 +85,7 @@ frontend/
 ## Design
 
 - **Classic map** drawn with small SVG textures (no canvas): grass floor, stone walls, brick blocks and bombs. The 6 characters are pictures with a transparent background, drawn a bit taller than a cell with their feet on it, like classic game sprites.
-- **Smooth movement**: one key press moves one cell, and the slide lasts exactly as long as the click debounce (200 ms, 30 ms less per ⚡ Speed), so each step lands when the next press is allowed. Explosions are drawn as a cross from the cells that are on fire.
+- **Smooth movement**: a player slides to the next cell in exactly the time the server waits between two moves (200 ms, 30 ms less per ⚡ Speed), so holding a key looks like one continuous walk. Explosions are drawn as a cross from the cells that are on fire.
 - **Dark, rounded interface** with the [Fredoka](https://fonts.google.com/specimen/Fredoka) font (the system font is used when offline).
 - **Readable**: text contrast is at least 6.5:1, buttons and fields are at least 46 px tall, every control has a visible focus ring, and players are told apart by their name tag, not only by color.
 - **System settings**: "reduce motion" turns off the animations and the slide, and "increase contrast" makes secondary text and borders stronger.

@@ -5,7 +5,7 @@ import { loginView } from './login.js'
 import { lobbyView } from './lobby.js'
 import { chatView } from './chat.js'
 import { gameView } from './game.js'
-import './controls.js' // registers the arrow keys and space (side effect only)
+import { repeatMove } from './controls.js'
 
 let chatId = 0
 let nextGame = null // newest game state, drawn on the next frame
@@ -59,6 +59,8 @@ function loop(now) {
     store.setState({ screen: 'game', game: nextGame })
     nextGame = null
   }
+  repeatMove(now) // keep walking while an arrow key is held
+
   // Count frames, show the FPS once per second
   frames++
   if (now - fpsStart >= 1000) {

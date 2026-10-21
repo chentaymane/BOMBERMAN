@@ -63,7 +63,7 @@ send({ type: 'move', move: 'up' })   // 'up' | 'down' | 'left' | 'right' | 'bomb
 - Send **only the direction**. Never send a position: the server knows where you are and checks every move against the real map.
 - Moves that are not possible are ignored (wall, block, bomb, too fast, dead player).
 - The server waits a short time between two moves of the same player (200 ms, less with speed power-ups). Sending faster does nothing, except one move that arrives a few ms early is kept and played when the wait is over.
-- Send **one move per key press** and ignore key repeat (`e.repeat`): holding a key does not keep moving. **Do not send a move on every frame.**
+- Send a move on `keydown`, then again about every 50 ms while the key is held (the frontend does it in its game loop, not with the keyboard's own repeat). **Do not send a move on every frame.**
 
 ### 4. Chat
 ```js
@@ -209,8 +209,9 @@ socket.onmessage = (event) => {
 send({ type: 'pick', character: 4 })
 
 const keys = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', ' ': 'bomb' }
+// Simplest version: the keyboard repeats keydown while a key is held, so holding keeps moving
+// (the frontend repeats held keys itself every 50 ms, which starts faster than the keyboard)
 document.addEventListener('keydown', (e) => {
-  if (e.repeat) return // one move per press, holding does nothing
   if (keys[e.key]) send({ type: 'move', move: keys[e.key] })
 })
 ```
