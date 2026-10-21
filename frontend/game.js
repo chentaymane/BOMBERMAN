@@ -43,8 +43,8 @@ const lastPos = {}
 
 // Moved with transform only (--cell is the tile size from style.css).
 // The slide lasts exactly as long as the server waits between two moves:
-// 200 ms, 30 ms less per speed power-up (MOVE_DELAY and SPEED_STEP on the
-// server), so holding a key looks like one smooth walk.
+// 200 ms, 30 ms less per speed power-up (MOVE_DELAY and SPEED_STEP in
+// backend/game/config.js), so holding a key looks like one smooth walk.
 function playerView(p, me) {
   const prev = lastPos[p.id]
   const respawn = prev && Math.abs(prev.x - p.x) + Math.abs(prev.y - p.y) > 1

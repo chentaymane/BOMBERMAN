@@ -57,9 +57,23 @@ Friends on the same network can join at `http://<your-computer-ip>:8080`. To use
 
 ```
 backend/
-  server.js       HTTP server: sends the frontend files and accepts the WebSocket (ws library)
-  game.js         all game rules: lobby, map, moves, bombs, lives, power-ups
+  server.js       the file you start: one HTTP server on port 8080
+  files.js        sends the frontend files to the browser
+  sockets.js      the WebSocket (ws library): limits, reads messages, passes them to the game
   API.md          every message between the browser and the server
+  game/           all the game rules, one file per topic:
+    index.js      what the rest of the server can call (join, pick, leave, move, chat)
+    config.js     all settings (times, sizes, limits) and the map symbols
+    state.js      everything the game remembers, shared by all the game files
+    helpers.js    small functions used by several files
+    map.js        the random map and the grid sent to the browsers
+    messages.js   the 'lobby' and 'state' messages
+    lobby.js      join, pick a character, leave, and the timers that start a game
+    moves.js      moving and picking up power-ups
+    bombs.js      dropping bombs and explosions
+    lives.js      damage and the winner
+    chat.js       chat messages
+    loop.js       the game loop (every 20 ms)
 frontend/
   index.html      the page
   style.css       design: dark game theme, map, players, chat
