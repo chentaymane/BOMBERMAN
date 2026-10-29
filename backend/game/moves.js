@@ -1,61 +1,52 @@
-// Player input. The browser only says what the player WANTS to do (a direction
-// or a bomb). queueMove stores the wish; the loop plays it with applyInputs,
+// Movement input. queueMove stores a direction; the loop applies it with applyMoves,
 // checked against the real map. So a player can never cheat with a position.
 const {
-  DIRECTIONS, MOVE_DELAY, SPEED_STEP, WALL, BLOCK, EMPTY,
+  DIRECTIONS, WALL, BLOCK, EMPTY,
   MAX_POWERUPS, MAX_BOMBS, MAX_RANGE, MAX_SPEED, POWER_BOMB, POWER_FLAME, POWER_SPEED,
 } = require('./config')
 const state = require('./state')
-const { findPlayer, inside, bombAt, isPowerUp } = require('./helpers')
-const { placeBomb } = require('./bombs')
-
-// move = 'up' | 'down' | 'left' | 'right' | 'bomb' (only stored here)
+const { findPlayer, inside, bombAt, isPowerUp, getMoveDelay } = require('./helpers')
+// move = 'up' | 'down' | 'left' | 'right'
 function queueMove(client, move) {
-  const p = findPlayer(client)
-  if (state.phase !== 'playing' || !p || p.lives <= 0 || typeof move !== 'string') return
-  if (move === 'bomb') p.wantsBomb = true
-  else if (Object.hasOwn(DIRECTIONS, move)) p.wantedMove = move // last wish wins
+  const player = findPlayer(client)
+  if (state.phase !== 'playing' || !player || player.lives <= 0 || typeof move !== 'string') return
+  if (Object.hasOwn(DIRECTIONS, move)) player.wantedMove = move // last wish wins
 }
 
 // Called by the loop: play the stored wishes of every living player
-function applyInputs(now) {
-  for (const p of state.players) {
-    if (p.lives <= 0) continue
-
-    if (p.wantsBomb) {
-      p.wantsBomb = false
-      placeBomb(p, now)
-    }
+function applyMoves(now) {
+  for (const player of state.players) {
+    if (player.lives <= 0) continue
 
     // Too soon after the last move: keep the wish, try again next tick
-    if (p.wantedMove && now >= p.nextMoveAt) {
-      tryMove(p, DIRECTIONS[p.wantedMove], now)
-      p.wantedMove = null
+    if (player.wantedMove && now >= player.nextMoveAt) {
+      tryMove(player, DIRECTIONS[player.wantedMove], now)
+      player.wantedMove = null
     }
   }
 }
 
-function tryMove(p, [dx, dy], now) {
-  const x = p.x + dx
-  const y = p.y + dy
+function tryMove(player, [dx, dy], now) {
+  const x = player.x + dx
+  const y = player.y + dy
   if (!inside(x, y)) return
   const tile = state.tiles[y][x]
   if (tile === WALL || tile === BLOCK || bombAt(x, y)) return
 
-  p.x = x
-  p.y = y
-  p.nextMoveAt = now + MOVE_DELAY - p.speed * SPEED_STEP
+  player.x = x
+  player.y = y
+  player.nextMoveAt = now + getMoveDelay(player)
 
   // Walking on a power-up picks it up. After MAX_POWERUPS the extra ones just disappear.
   if (isPowerUp(tile)) {
     state.tiles[y][x] = EMPTY
-    if (p.totalPups < MAX_POWERUPS) {
-      p.totalPups++
-      if (tile === POWER_BOMB) p.maxBombs = Math.min(MAX_BOMBS, p.maxBombs + 1)
-      if (tile === POWER_FLAME) p.range = Math.min(MAX_RANGE, p.range + 1)
-      if (tile === POWER_SPEED) p.speed = Math.min(MAX_SPEED, p.speed + 1)
+    if (player.totalPups < MAX_POWERUPS) {
+      player.totalPups++
+      if (tile === POWER_BOMB) player.maxBombs = Math.min(MAX_BOMBS, player.maxBombs + 1)
+      if (tile === POWER_FLAME) player.range = Math.min(MAX_RANGE, player.range + 1)
+      if (tile === POWER_SPEED) player.speed = Math.min(MAX_SPEED, player.speed + 1)
     }
   }
 }
 
-module.exports = { queueMove, applyInputs }
+module.exports = { queueMove, applyMoves }

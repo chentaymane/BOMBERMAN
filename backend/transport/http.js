@@ -4,13 +4,20 @@
 const fs = require('fs')
 const path = require('path')
 
-const FRONTEND = path.join(__dirname, '..', 'frontend')
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.webp': 'image/webp' }
+const FRONTEND = path.join(__dirname, '..', '..', 'frontend')
+const CONTENT_TYPES = {
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
+  '.mp3': 'audio/mpeg',
+}
 
 function serveFile(req, res) {
   const url = req.url.split('?')[0]
   const file = path.join(FRONTEND, url === '/' ? 'index.html' : url)
-  const type = TYPES[path.extname(file)]
+  const type = CONTENT_TYPES[path.extname(file)]
   if (!type || !file.startsWith(FRONTEND + path.sep)) {
     res.writeHead(404)
     return res.end('Not found')

@@ -1,0 +1,18 @@
+/* Player faces (same character in the waiting room, the players bar and the board) */
+.avatar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background-color: var(--fill);
+  background-position: 50% 6%;
+  background-size: 190%; /* zoom on the head */
+  background-repeat: no-repeat;
+}
+
+/* Image URLs come from the roster through components/character.js. */
+.avatar,
+.pick,
+.player {
+  background-image: var(--character-image, none);
+}

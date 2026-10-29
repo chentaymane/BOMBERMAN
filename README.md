@@ -8,11 +8,15 @@ The game is drawn with plain DOM elements, using our own [mini-framework](fronte
 
 - **Nickname page** where each player enters a name, then a **waiting room** with a player counter (up to 4 players). Everyone gets a **random free character** and can change it there: a character is locked for the others as soon as somebody takes it.
 - **Lobby timers**: when 2 players are in, a 20 s wait starts for more players. Then a 10 s countdown starts the game. With 4 players, the countdown starts right away.
-- **Map**: 15 × 13 cells. Walls never move; blocks are placed at random. Every player starts in a corner with room to escape their first bomb.
+- **Map**: 15 × 13 cells. Walls never move; blocks are placed at random. Every player starts in a corner with two clear cells along each escape corridor.
 - **3 lives** per player, and **power-ups** that may appear when a block is destroyed.
 - **Chat** for all players, in the waiting room and during the game.
-- **60 FPS**: a `requestAnimationFrame` game loop, at most one render per frame, players moved with CSS `transform`, and an FPS counter on screen.
-- **Classic Bomberman look**: a textured map (grass, stone, bricks), the picked characters with name tags, cross-shaped explosions, and a dark, rounded game interface.
+- **Character death sounds:** one MP3 recording per character, played
+  when a character loses a life. Use **Sound: on/off** below the board to mute.
+  Disconnect forfeits do not trigger death sounds.
+  Add recordings using the filenames listed in [data/SOUNDS.md](frontend/data/SOUNDS.md).
+- **Rendering**: a `requestAnimationFrame` game loop, at most one render per frame (including chat and input updates), players moved with CSS `transform`, and an FPS counter on screen. See [performance verification](PERFORMANCE.md) for local measurements and limits.
+- **Nine characters** from `frontend/allal/`, with optimized transparent WebP copies for the picker, avatars and board. A textured map (grass, stone, bricks), name tags and cross-shaped explosions complete the game interface.
 
 ## Requirements
 
@@ -46,6 +50,10 @@ Friends on the same network can join at `http://<your-computer-ip>:8080`. To use
 - A bomb hit by a flame is not set off: there are **no chain reactions**.
 - If the flames touch you, you lose a life. You go back to your corner and are protected for 2 s (your player blinks).
 - With 0 lives you are out, but you can still watch and chat.
+- Losing your WebSocket connection while alive in an active match forfeits all
+  remaining lives. Your card shows **Forfeit** until the round ends. The last
+  survivor wins immediately. Silent network failures are detected by heartbeat
+  checks within about 30 seconds; a normal close is handled immediately.
 
 | Power-up | Effect |
 | --- | --- |
@@ -55,50 +63,43 @@ Friends on the same network can join at `http://<your-computer-ip>:8080`. To use
 
 ## Project structure
 
-```
+See [AUDIT.md](AUDIT.md) for checklist results, viewport screenshots and Chrome
+performance tracing evidence.
+
+Start with [ARCHITECTURE.md](ARCHITECTURE.md) for the request flow, module responsibilities, and a guide to making changes.
+
+```text
 backend/
-  server.js       the file you start: one HTTP server on port 8080
-  files.js        sends the frontend files to the browser
-  sockets.js      the WebSocket (ws library): limits, reads messages, passes them to the game
-  API.md          every message between the browser and the server
-  game/           all the game rules, one file per topic:
-    index.js      what the rest of the server can call (join, pick, leave, move, chat)
-    config.js     all settings (times, sizes, limits) and the map symbols
-    state.js      everything the game remembers, shared by all the game files
-    helpers.js    small functions used by several files
-    map.js        the random map and the grid sent to the browsers
-    messages.js   the 'lobby' and 'state' messages
-    lobby.js      join, pick a character, leave, and the timers that start a game
-    moves.js      moving and picking up power-ups
-    bombs.js      dropping bombs and explosions
-    lives.js      damage and the winner
-    chat.js       chat messages
-    loop.js       the game loop (every 20 ms)
+  server.js          starts HTTP, WebSockets and the simulation loop
+  transport/         HTTP file serving and WebSocket validation
+  game/              authoritative rules, state, snapshots and 20 ms loop
+  API.md             WebSocket message contract
 frontend/
-  index.html      the page
-  style.css       design: dark game theme, map, players, chat
-  textures/       SVG textures: floor, wall, brick and bomb
-  characters/     the 6 characters players can pick (1.webp to 6.webp)
-  app.js          entry point: server messages, screens, game loop
-  socket.js       WebSocket connection
-  store.js        app state
-  login.js        nickname page
-  lobby.js        waiting room
-  game.js         board, players and game over
-  chat.js         chat
-  controls.js     keyboard controls
-  framework/      the mini-framework (virtual DOM, state, events, router)
+  app.js             connects state, screens, input and networking
+  assets/            loads and decodes character images before joining
+  screens/           nickname, lobby and game screen composition
+  components/        chat shared by lobby and game
+  game/              input, animation loop, tiles, players, HUD and results
+  network/           WebSocket transport and incoming message handling
+  state/             application store, flushed once per animation frame
+  data/              character names and image URLs
+  styles/            base, lobby, characters, chat, game and accessibility
+  allal/             source character PNGs and optimized WebP copies
+  textures/          map and bomb SVG textures
+  characters/        previous character assets (unused)
+  framework/         unchanged core plus reusable socket, batching and image extensions
+tests/               game regressions and performance checks
 ```
 
 ## How it works
 
-- **The server decides everything.** The browser only sends what the player wants to do (`join`, `move` with a direction, `chat`). The server checks every move against the real map, runs the game every 20 ms and sends the new state only when something changed. All messages are described in [backend/API.md](backend/API.md).
+- **The server decides everything.** The browser sends intentions: `join`, `move` with a direction, `place` for a bomb, and `chat`. Movement and placement have separate queues. The server checks each action against the real map, runs the game every 20 ms and sends the new state only when something changed. All messages are described in [backend/API.md](backend/API.md).
 - **The frontend only draws.** Each screen is a function that returns virtual nodes made with `h()`. The framework compares them with the previous ones and only changes the DOM where something is different.
-- **Smooth frames.** The newest game state is kept and drawn on the next animation frame, so there is never more than one render per frame. The map grid is rebuilt only when the map changes, and players move with `transform`, which does not trigger page layout.
+- **Smooth frames.** All store updates are staged immediately and flushed once on the next animation frame. The tile grid and individual cells reuse virtual nodes when their visible classes are unchanged, even across fresh JSON snapshots. Players move with `transform`, which does not trigger page layout.
 
 ## Design
 
-- **Classic map** drawn with small SVG textures (no canvas): grass floor, stone walls, brick blocks and bombs. The 6 characters are pictures with a transparent background, drawn a bit taller than a cell with their feet on it, like classic game sprites.
+- **Classic map** drawn with small SVG textures (no canvas): grass floor, stone walls, brick blocks and bombs. The 9 characters use transparent WebP pictures drawn a bit taller than a cell with their feet on it. Source PNGs are preserved in `frontend/allal/`.
 - **Smooth movement**: a player slides to the next cell in exactly the time the server waits between two moves (200 ms, 30 ms less per ⚡ Speed), so holding a key looks like one continuous walk. Explosions are drawn as a cross from the cells that are on fire.
 - **Dark, rounded interface** with the [Fredoka](https://fonts.google.com/specimen/Fredoka) font (the system font is used when offline).
 - **Readable**: text contrast is at least 6.5:1, buttons and fields are at least 46 px tall, every control has a visible focus ring, and players are told apart by their name tag, not only by color.

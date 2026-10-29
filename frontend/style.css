@@ -249,27 +249,39 @@ button:disabled {
 
 /* The characters players can pick (after .pick, so the picture wins) */
 .c1 {
-  background-image: url(characters/1.webp);
+  background-image: url(data/optimized/allal.webp);
 }
 
 .c2 {
-  background-image: url(characters/2.webp);
+  background-image: url(data/optimized/bualam.webp);
 }
 
 .c3 {
-  background-image: url(characters/3.webp);
+  background-image: url(data/optimized/cheb-larbi.webp);
 }
 
 .c4 {
-  background-image: url(characters/4.webp);
+  background-image: url(data/optimized/driss.webp);
 }
 
 .c5 {
-  background-image: url(characters/5.webp);
+  background-image: url(data/optimized/mmi-na3ima.webp);
 }
 
 .c6 {
-  background-image: url(characters/6.webp);
+  background-image: url(data/optimized/niba.webp);
+}
+
+.c7 {
+  background-image: url(data/optimized/nizar.webp);
+}
+
+.c8 {
+  background-image: url(data/optimized/san-du-khan.webp);
+}
+
+.c9 {
+  background-image: url(data/optimized/wldchinwya.webp);
 }
 
 /* Waiting room */
