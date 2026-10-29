@@ -1,7 +1,7 @@
 import { h } from '../framework/index.js'
 import { store } from '../state/store.js'
 import { send } from '../network/socket.js'
-import { loadCharacters } from '../assets/characters.js'
+import { loadCharacters } from '../game/preload-characters.js'
 
 function join(event) {
   event.preventDefault()

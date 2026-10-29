@@ -76,7 +76,7 @@ backend/
   API.md             WebSocket message contract
 frontend/
   app.js             connects state, screens, input and networking
-  assets/            loads and decodes character images before joining
+  assets/            one folder per character; player.webp, death.mp3 and win.mp3
   screens/           nickname, lobby and game screen composition
   components/        chat shared by lobby and game
   game/              input, animation loop, tiles, players, HUD and results
@@ -84,9 +84,8 @@ frontend/
   state/             application store, flushed once per animation frame
   data/              character names and image URLs
   styles/            base, lobby, characters, chat, game and accessibility
-  allal/             source character PNGs and optimized WebP copies
+  allal/             original character PNG artwork
   textures/          map and bomb SVG textures
-  characters/        previous character assets (unused)
   framework/         unchanged core plus reusable socket, batching and image extensions
 tests/               game regressions and performance checks
 ```
@@ -109,3 +108,7 @@ tests/               game regressions and performance checks
 
 - bguitoni: backend
 - chentaymane: frontend
+- ahaddou: frontend/backend refactoring, rendering performance improvements,
+  character integration and shared roster, reusable framework extensions,
+  separate movement/placement commands, WebSocket disconnect forfeits, MP3 sound
+  integration.

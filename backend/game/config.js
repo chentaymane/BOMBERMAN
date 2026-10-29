@@ -21,7 +21,7 @@ const MAX_SPEED = 4
 const MAX_POWERUPS = 5 // total power-ups a player can collect (bombs + flames + speed)
 const CHAT_DELAY = 300 // ms between chat messages
 const NAME_RULE = /^[\p{L}\p{N} _-]{1,15}$/u
-const CHARACTERS = 9 // roster in frontend/data/characters.js, images in frontend/allal
+const CHARACTERS = 9 // roster in frontend/data/characters.js, files in frontend/assets
 
 // ----- Map symbols (the map sent to the browsers is a grid of these) -----
 const EMPTY = '.'

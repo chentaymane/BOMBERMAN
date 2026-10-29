@@ -1,6 +1,6 @@
 import { on } from '../framework/index.js'
 import { createAudioPlayer } from '../framework/audio.js'
-import { DEATH_SOUNDS } from '../data/characters.js'
+import { DEATH_SOUNDS, WIN_SOUNDS } from '../data/characters.js'
 import { store } from '../state/store.js'
 
 const audio = createAudioPlayer()
@@ -30,4 +30,10 @@ export function playDeathSounds(previousGame, nextGame, play = sound => audio.pl
     const sound = DEATH_SOUNDS[player.character]
     if (previous && player.lives < previous.lives && !player.forfeited && sound) play(sound)
   }
+}
+
+export function playWinSound(game, winner, play = sound => audio.play(sound)) {
+  const player = game?.players.find(player => player.name === winner)
+  const sound = player && WIN_SOUNDS[player.character]
+  if (sound) play(sound)
 }

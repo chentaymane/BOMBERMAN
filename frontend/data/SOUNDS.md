@@ -1,27 +1,19 @@
-# Character death recordings
+# Character recordings
 
-Add actual MP3 files directly in this directory, using these names:
+Each roster entry specifies a folder under `frontend/assets/`:
 
-| Character | Filename |
-| --- | --- |
-| Allal | `allal.mp3` |
-| Bualam | `bualam.mp3` |
-| Cheb Larbi | `cheb-larbi.mp3` |
-| Driss | `driss.mp3` |
-| Mmi Na3ima | `mmi-na3ima.mp3` |
-| Niba | `niba.mp3` |
-| Nizar | `nizar.mp3` |
-| San Du Khan | `san-du-khan.mp3` |
-| Wldchinwya | `wldchinwya.mp3` |
+```js
+{ name: 'Allal', folder: 'allal' }
+```
 
-Edit each roster entry's `sound` field in `characters.js` if you prefer different
-filenames. Names, images and sound URLs are derived from this one roster.
-Playback uses the real
-recording, with no generated-tone fallback. Missing or invalid files stay silent
-and can be retried on the next life loss. Successful downloads are decoded and
-cached for subsequent deaths. Reload the page after replacing an already cached
-recording. Use **Sound: on/off** below the board to mute.
+Put the recordings inside that folder using the common names:
 
-The backend serves `.mp3` with `audio/mpeg`. Restart an already running backend
-after installing this update. Adding recording files afterwards requires no
-server-code change.
+- `player.webp`: the character image (already supplied).
+- `death.mp3`: played when the character loses a life.
+- `win.mp3`: played when the character wins the round.
+
+See [assets/README.md](../assets/README.md) for the full directory layout.
+The roster derives every URL. No generated-tone fallback is used. Missing or
+invalid recordings stay silent and can be retried on the next matching event.
+Reload after replacing a successfully cached recording. The sound toggle
+below the board controls both death and victory recordings.

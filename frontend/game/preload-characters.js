@@ -2,7 +2,7 @@ import { CHARACTER_IMAGES } from '../data/characters.js'
 import { store } from '../state/store.js'
 import { preloadImages } from '../framework/images.js'
 
-// Decode before allowing entry to the lobby, where CSS backgrounds first appear.
+// Decode character images before allowing entry to the lobby.
 // Keeping the decoded images alive also avoids discarding them before that render.
 let images = []
 

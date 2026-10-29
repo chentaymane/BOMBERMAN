@@ -1,5 +1,5 @@
 import { store } from '../state/store.js'
-import { playDeathSounds } from '../game/sounds.js'
+import { playDeathSounds, playWinSound } from '../game/sounds.js'
 
 const MAX_CHAT_MESSAGES = 50
 let nextChatId = 0
@@ -39,6 +39,10 @@ export function handleServerMessage(message) {
       }))
       break
     case 'over':
+      if (!store.getState().over) {
+        const state = store.getState()
+        playWinSound(state.game ?? state.lobby, message.winner)
+      }
       store.setState({ over: true, winner: message.winner })
       break
   }

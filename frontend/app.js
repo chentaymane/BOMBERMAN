@@ -8,7 +8,7 @@ import { loginView } from './screens/login.js'
 import { lobbyView } from './screens/lobby.js'
 import { gameView } from './screens/game.js'
 import { chatView } from './components/chat.js'
-import { loadCharacters } from './assets/characters.js'
+import { loadCharacters } from './game/preload-characters.js'
 import { startSounds } from './game/sounds.js'
 
 function appView(state) {
