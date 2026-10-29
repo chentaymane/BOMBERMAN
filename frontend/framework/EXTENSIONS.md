@@ -69,7 +69,7 @@ loading screens and application state are deliberately owned by the caller.
 ## Recorded audio playback
 
 Import createAudioPlayer from ./audio.js, unlock it from a user gesture, then
-call await audio.play('/assets/allal/death.mp3'). Use audio.setEnabled(false) to mute.
+call await audio.play('/assets/characters/allal/death.mp3'). Use audio.setEnabled(false) to mute.
 
 The player downloads and decodes actual audio files. Decoded buffers are cached
 by URL, including concurrent requests. Each playback gets its own buffer source,

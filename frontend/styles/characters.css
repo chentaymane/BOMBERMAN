@@ -10,7 +10,7 @@
   background-repeat: no-repeat;
 }
 
-/* Image URLs come from the roster through components/character.js. */
+/* Views use the cached image style from data/characters.js. */
 .avatar,
 .pick,
 .player {

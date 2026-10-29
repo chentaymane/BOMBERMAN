@@ -1,7 +1,8 @@
 import { on } from '../framework/index.js'
 import { createAudioPlayer } from '../framework/audio.js'
-import { DEATH_SOUNDS, WIN_SOUNDS } from '../data/characters.js'
-import { store } from '../state/store.js'
+import { CHARACTERS } from '../data/characters.js'
+import { preloadImages } from '../framework/images.js'
+import { store } from '../store.js'
 
 const audio = createAudioPlayer()
 
@@ -27,13 +28,27 @@ export function playDeathSounds(previousGame, nextGame, play = sound => audio.pl
   if (!previousGame) return
   for (const player of nextGame.players) {
     const previous = previousGame.players.find(other => other.id === player.id)
-    const sound = DEATH_SOUNDS[player.character]
+    const sound = CHARACTERS[player.character - 1]?.deathSound
     if (previous && player.lives < previous.lives && !player.forfeited && sound) play(sound)
   }
 }
 
 export function playWinSound(game, winner, play = sound => audio.play(sound)) {
   const player = game?.players.find(player => player.name === winner)
-  const sound = player && WIN_SOUNDS[player.character]
+  const sound = player && CHARACTERS[player.character - 1]?.winSound
   if (sound) play(sound)
+}
+
+// Decode character images before allowing entry to the lobby.
+// Keeping the decoded images alive also avoids discarding them before that render.
+let images = []
+
+export async function loadCharacters() {
+  store.setState({ charactersStatus: 'loading' })
+  try {
+    images = await preloadImages(CHARACTERS.map(character => character.image))
+    store.setState({ charactersStatus: 'ready' })
+  } catch {
+    store.setState({ charactersStatus: 'error' })
+  }
 }

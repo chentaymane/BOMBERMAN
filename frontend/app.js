@@ -1,15 +1,12 @@
 import { h, mount } from './framework/index.js'
-import { store } from './state/store.js'
-import { connect } from './network/socket.js'
-import { handleServerMessage, handleDisconnect } from './network/messages.js'
-import { startControls } from './game/controls.js'
-import { startLoop } from './game/loop.js'
-import { loginView } from './screens/login.js'
-import { lobbyView } from './screens/lobby.js'
-import { gameView } from './screens/game.js'
-import { chatView } from './components/chat.js'
-import { loadCharacters } from './game/preload-characters.js'
-import { startSounds } from './game/sounds.js'
+import { store } from './store.js'
+import { connect } from './socket.js'
+import { startControls, repeatMove } from './game/controls.js'
+import { loginView } from './views/login.js'
+import { lobbyView } from './views/lobby.js'
+import { gameView } from './views/game.js'
+import { chatView } from './views/chat.js'
+import { loadCharacters, startSounds } from './game/media.js'
 
 function appView(state) {
   if (state.screen === 'login') return loginView(state)
@@ -21,10 +18,24 @@ function appView(state) {
 mount(appView, document.getElementById('app'), store)
 startControls()
 startSounds()
-connect({
-  onMessage: handleServerMessage,
-  onOpen: () => store.setState({ connected: true }),
-  onClose: handleDisconnect,
-})
-startLoop()
+connect()
 loadCharacters()
+
+let frames = 0
+let fpsStartedAt = performance.now()
+
+function frame(now) {
+  repeatMove(now)
+  frames++
+
+  if (now - fpsStartedAt >= 1000) {
+    store.setState({ fps: Math.round(frames * 1000 / (now - fpsStartedAt)) })
+    frames = 0
+    fpsStartedAt = now
+  }
+
+  store.flush()
+  requestAnimationFrame(frame)
+}
+
+requestAnimationFrame(frame)

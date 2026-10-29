@@ -1,24 +1,31 @@
-# Character assets
+# Assets
 
-Each character has a folder with the same three filenames:
+Shared map and bomb textures live in `textures/`. Each character has a folder under
+`characters/` with the same three filenames:
 
 ```text
 assets/
-  allal/
-    player.webp
-    death.mp3
-    win.mp3
-  bualam/
-    player.webp
-    death.mp3
-    win.mp3
-  cheb-larbi/
-  driss/
-  mmi-na3ima/
-  niba/
-  nizar/
-  san-du-khan/
-  wldchinwya/
+  textures/
+    floor.svg
+    wall.svg
+    brick.svg
+    bomb.svg
+  characters/
+    allal/
+      player.webp
+      death.mp3
+      win.mp3
+    bualam/
+      player.webp
+      death.mp3
+      win.mp3
+    cheb-larbi/
+    driss/
+    mmi-na3ima/
+    niba/
+    nizar/
+    san-du-khan/
+    wldchinwya/
 ```
 
 All nine folders contain their existing optimized `player.webp`. Add your actual
@@ -36,5 +43,5 @@ Life loss plays the affected character's `death.mp3`. A winner announcement play
 that character's `win.mp3` once per round on connected clients. Draws are silent.
 The sound toggle controls both effects; concurrent events can overlap.
 
-Image preloading lives in `frontend/game/preload-characters.js`. Source PNG
+Image preloading lives in `frontend/game/media.js`. Source PNG
 artwork remains separately in `frontend/allal/`.

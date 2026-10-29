@@ -1,114 +1,136 @@
 # Bomberman DOM
 
-A multiplayer Bomberman game for 2 to 4 players, played in the browser. The last player standing wins.
+A browser-based multiplayer Bomberman game for 2 to 4 players. Destroy blocks,
+collect power-ups and survive until you are the last player standing.
 
-The game is drawn with plain DOM elements, using our own [mini-framework](frontend/framework/): no canvas, no WebGL and no other framework. Players talk to the server and to each other in real time with WebSockets.
+The interface uses our custom [mini-framework](frontend/framework/), DOM elements
+and CSS. There is no canvas, WebGL or third-party UI framework. The Node.js
+server uses [ws](https://github.com/websockets/ws) for real-time communication.
 
-## Features
+## Run locally
 
-- **Nickname page** where each player enters a name, then a **waiting room** with a player counter (up to 4 players). Everyone gets a **random free character** and can change it there: a character is locked for the others as soon as somebody takes it.
-- **Lobby timers**: when 2 players are in, a 20 s wait starts for more players. Then a 10 s countdown starts the game. With 4 players, the countdown starts right away.
-- **Map**: 15 × 13 cells. Walls never move; blocks are placed at random. Every player starts in a corner with two clear cells along each escape corridor.
-- **3 lives** per player, and **power-ups** that may appear when a block is destroyed.
-- **Chat** for all players, in the waiting room and during the game.
-- **Character death sounds:** one MP3 recording per character, played
-  when a character loses a life. Use **Sound: on/off** below the board to mute.
-  Disconnect forfeits do not trigger death sounds.
-  Add recordings using the filenames listed in [data/SOUNDS.md](frontend/data/SOUNDS.md).
-- **Rendering**: a `requestAnimationFrame` game loop, at most one render per frame (including chat and input updates), players moved with CSS `transform`, and an FPS counter on screen. See [performance verification](PERFORMANCE.md) for local measurements and limits.
-- **Nine characters** from `frontend/allal/`, with optimized transparent WebP copies for the picker, avatars and board. A textured map (grass, stone, bricks), name tags and cross-shaped explosions complete the game interface.
+Requires Node.js 18 or newer and a modern browser.
 
-## Requirements
-
-- [Node.js](https://nodejs.org) 18 or newer. The backend uses one package, [ws](https://github.com/websockets/ws), for the WebSocket.
-- A modern browser (Chrome, Firefox, Safari or Edge).
-
-## Run the game
-
-```bash
+```sh
 cd backend
 npm install
 npm start
 ```
 
-`npm install` is only needed the first time.
+Open **http://localhost:8080** in separate browser tabs or private windows.
+Players on the same network can join at `http://<server-ip>:8080`.
+Set the `PORT` environment variable to change the listening port.
 
-Open http://localhost:8080 in 2 to 4 browser tabs, enter a nickname and pick a character in each one, and wait for the countdown.
+## Join a game
 
-Friends on the same network can join at `http://<your-computer-ip>:8080`. To use another port, set the `PORT` environment variable.
+1. Enter a unique nickname.
+2. Choose one of nine characters in the waiting room. Taken characters are locked.
+3. Chat with the other players while waiting for the round to start.
 
-## How to play
+When the second player joins, a 20-second wait starts, followed by a 10-second
+ready countdown. If four players join earlier, the ready countdown starts
+immediately. Each player starts in a different corner with three lives.
 
-| Key | Action |
+## Controls
+
+| Control | Action |
 | --- | --- |
-| Arrow keys | Move (hold to keep moving) |
-| Space | Drop a bomb |
-| Esc | Leave the chat field and go back to the game |
+| Arrow keys | Move; hold to keep moving |
+| Space | Place a bomb |
+| Esc | Leave the chat input and return to game controls |
+| Sound button | Mute or unmute death and victory recordings |
 
-- A bomb explodes after 3 s. Its flames go in 4 directions and stop at walls, bricks and bombs.
-- Flames destroy **bricks** and **players**, and nothing else: power-ups lying on the ground are never burned and the flame goes right over them.
-- A bomb hit by a flame is not set off: there are **no chain reactions**.
-- If the flames touch you, you lose a life. You go back to your corner and are protected for 2 s (your player blinks).
-- With 0 lives you are out, but you can still watch and chat.
-- Losing your WebSocket connection while alive in an active match forfeits all
-  remaining lives. Your card shows **Forfeit** until the round ends. The last
-  survivor wins immediately. Silent network failures are detected by heartbeat
-  checks within about 30 seconds; a normal close is handled immediately.
+## Game rules
+
+- The fixed 15 ? 13 map contains permanent walls and randomly placed destructible blocks.
+- Starting corners have clear escape routes. The board scales to the viewport.
+- Bombs explode after three seconds. Flames extend in four directions and stop
+  at walls, blocks and other bombs. Bombs do not trigger chain reactions.
+- Being caught in flames costs one life. Surviving players respawn at their
+  corner with two seconds of protection.
+- At zero lives, you can watch and chat but cannot move or place bombs.
+- Losing your WebSocket connection while alive forfeits your remaining lives.
+  Silent network failures are detected through heartbeat checks within about
+  30 seconds. Normal connection closes are handled immediately.
+- The last survivor wins. After the result screen, connected players return
+  to the waiting room for another round.
+
+Destroyed blocks may reveal power-ups. Items already on the ground are not
+destroyed by flames.
 
 | Power-up | Effect |
 | --- | --- |
-| 💣 Bombs | Drop one more bomb at a time |
-| 🔥 Flames | Explosions reach one more cell |
-| ⚡ Speed | Move faster |
+| Bombs | Increases simultaneous bomb capacity |
+| Flames | Increases explosion range |
+| Speed | Reduces the delay between movement steps |
+
+## Character assets
+
+Each character has a folder under `frontend/assets/characters/`:
+
+```text
+frontend/assets/characters/allal/
+  player.webp
+  death.mp3
+  win.mp3
+```
+
+The roster in [characters.js](frontend/data/characters.js) is the single source
+of character names and folder names:
+
+```js
+{ name: 'Allal', folder: 'allal' }
+```
+
+Images are provided. Add your MP3 recordings as `death.mp3` and `win.mp3` in
+each folder. Missing audio stays silent. Death recordings play on life loss;
+victory recordings play once when a winner is announced. Forfeits are silent.
+See the [asset guide](frontend/assets/README.md) for the complete layout.
 
 ## Project structure
 
-See [AUDIT.md](AUDIT.md) for checklist results, viewport screenshots and Chrome
-performance tracing evidence.
-
-Start with [ARCHITECTURE.md](ARCHITECTURE.md) for the request flow, module responsibilities, and a guide to making changes.
-
 ```text
 backend/
-  server.js          starts HTTP, WebSockets and the simulation loop
-  transport/         HTTP file serving and WebSocket validation
-  game/              authoritative rules, state, snapshots and 20 ms loop
-  API.md             WebSocket message contract
+  server.js       application startup
+  transport/      HTTP file serving and WebSocket connections
+  game/           authoritative rules, state and simulation loop
+  API.md          WebSocket message contract
 frontend/
-  app.js             connects state, screens, input and networking
-  assets/            one folder per character; player.webp, death.mp3 and win.mp3
-  screens/           nickname, lobby and game screen composition
-  components/        chat shared by lobby and game
-  game/              input, animation loop, tiles, players, HUD and results
-  network/           WebSocket transport and incoming message handling
-  state/             application store, flushed once per animation frame
-  data/              character names and image URLs
-  styles/            base, lobby, characters, chat, game and accessibility
-  allal/             original character PNG artwork
-  textures/          map and bomb SVG textures
-  framework/         unchanged core plus reusable socket, batching and image extensions
-tests/               game regressions and performance checks
+  app.js          startup, screen selection and animation frames
+  assets/
+    characters/   one folder per character
+    textures/     shared map and bomb SVGs
+  data/           shared character roster
+  store.js        application state
+  socket.js       connection and incoming message handling
+  views/          login, waiting room, game and chat markup
+  game/           keyboard controls, cached tiles and media loading/playback
+  styles/         styles grouped by purpose
+  framework/      custom framework core and reusable extensions
+  allal/          original character PNG artwork
 ```
 
-## How it works
+## Architecture and performance
 
-- **The server decides everything.** The browser sends intentions: `join`, `move` with a direction, `place` for a bomb, and `chat`. Movement and placement have separate queues. The server checks each action against the real map, runs the game every 20 ms and sends the new state only when something changed. All messages are described in [backend/API.md](backend/API.md).
-- **The frontend only draws.** Each screen is a function that returns virtual nodes made with `h()`. The framework compares them with the previous ones and only changes the DOM where something is different.
-- **Smooth frames.** All store updates are staged immediately and flushed once on the next animation frame. The tile grid and individual cells reuse virtual nodes when their visible classes are unchanged, even across fresh JSON snapshots. Players move with `transform`, which does not trigger page layout.
+The server validates player intentions and advances the simulation every 20 ms.
+Movement and bomb placement use separate commands. Clients render server
+snapshots; they do not decide positions, damage or winners.
 
-## Design
+Browser updates are batched into one render per animation frame. Unchanged
+tiles reuse virtual nodes, and player animation uses CSS transforms. The FPS
+counter provides a live indication of rendering frequency. The target is at
+least 60 FPS; actual performance depends on the device and browser.
 
-- **Classic map** drawn with small SVG textures (no canvas): grass floor, stone walls, brick blocks and bombs. The 9 characters use transparent WebP pictures drawn a bit taller than a cell with their feet on it. Source PNGs are preserved in `frontend/allal/`.
-- **Smooth movement**: a player slides to the next cell in exactly the time the server waits between two moves (200 ms, 30 ms less per ⚡ Speed), so holding a key looks like one continuous walk. Explosions are drawn as a cross from the cells that are on fire.
-- **Dark, rounded interface** with the [Fredoka](https://fonts.google.com/specimen/Fredoka) font (the system font is used when offline).
-- **Readable**: text contrast is at least 6.5:1, buttons and fields are at least 46 px tall, every control has a visible focus ring, and players are told apart by their name tag, not only by color.
-- **System settings**: "reduce motion" turns off the animations and the slide, and "increase contrast" makes secondary text and borders stronger.
+- [Architecture and module responsibilities](ARCHITECTURE.md)
+- [WebSocket API](backend/API.md)
+- [Framework extension APIs](frontend/framework/EXTENSIONS.md)
+- [Performance notes](PERFORMANCE.md)
 
 ## Authors
 
-- bguitoni: backend
-- chentaymane: frontend
-- ahaddou: frontend/backend refactoring, rendering performance improvements,
+- **bguitoni:** backend.
+- **chentaymane:** frontend.
+- **ahaddou:** frontend/backend refactoring, rendering performance improvements,
   character integration and shared roster, reusable framework extensions,
-  separate movement/placement commands, WebSocket disconnect forfeits, MP3 sound
-  integration.
+  separate movement/placement commands, WebSocket disconnect forfeits and MP3
+  sound integration.

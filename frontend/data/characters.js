@@ -11,18 +11,15 @@ const roster = [
   { name: 'Wldchinwya', folder: 'wldchinwya' },
 ]
 
-export const CHARACTERS = roster.map(character => character.name)
-
-function assetUrls(filename) {
-  return roster.map(character =>
-    new URL(`../assets/${character.folder}/${filename}`, import.meta.url).href,
-  )
-}
-
-function soundMap(filename) {
-  return Object.fromEntries(assetUrls(filename).map((url, index) => [index + 1, url]))
-}
-
-export const CHARACTER_IMAGES = assetUrls('player.webp')
-export const DEATH_SOUNDS = soundMap('death.mp3')
-export const WIN_SOUNDS = soundMap('win.mp3')
+export const CHARACTERS = roster.map((character, index) => {
+  const folder = new URL(`../assets/characters/${character.folder}/`, import.meta.url)
+  const image = new URL('player.webp', folder).href
+  return {
+    ...character,
+    id: index + 1,
+    image,
+    deathSound: new URL('death.mp3', folder).href,
+    winSound: new URL('win.mp3', folder).href,
+    style: { '--character-image': `url("${image}")` },
+  }
+})

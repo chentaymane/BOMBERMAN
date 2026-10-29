@@ -1,6 +1,6 @@
 import { on } from '../framework/index.js'
-import { store } from '../state/store.js'
-import { send } from '../network/socket.js'
+import { store } from '../store.js'
+import { send } from '../socket.js'
 
 const KEY_MOVES = {
   ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',

@@ -3,7 +3,7 @@
   width: 96px;
   height: 96px;
   margin: 0 auto;
-  background: url(../textures/bomb.svg) center / contain no-repeat;
+  background: url(../assets/textures/bomb.svg) center / contain no-repeat;
   animation: float 2s ease-in-out infinite alternate;
 }
 

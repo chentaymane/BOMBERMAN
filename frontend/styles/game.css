@@ -75,7 +75,7 @@
   font-size: 0.875rem;
 }
 
-/* Board: the classic Bomberman map, drawn with the SVG textures in frontend/textures */
+/* Board: the classic Bomberman map, drawn with the SVG textures in frontend/assets/textures */
 .board {
   position: relative;
   width: calc(var(--columns) * var(--cell));
@@ -88,7 +88,7 @@
 .tiles {
   display: grid;
   grid-template-columns: repeat(var(--columns), var(--cell));
-  background: url(../textures/floor.svg) 0 0 / calc(var(--cell) * 2) calc(var(--cell) * 2);
+  background: url(../assets/textures/floor.svg) 0 0 / calc(var(--cell) * 2) calc(var(--cell) * 2);
 }
 
 .cell {
@@ -102,11 +102,11 @@
 }
 
 .wall {
-  background-image: url(../textures/wall.svg);
+  background-image: url(../assets/textures/wall.svg);
 }
 
 .block {
-  background-image: url(../textures/brick.svg);
+  background-image: url(../assets/textures/brick.svg);
 }
 
 /* Floor right under a wall or a block: its shadow */
@@ -144,7 +144,7 @@
   content: '';
   width: 90%;
   height: 90%;
-  background: url(../textures/bomb.svg) center / contain no-repeat;
+  background: url(../assets/textures/bomb.svg) center / contain no-repeat;
   animation: tick 0.4s ease-in-out infinite alternate;
 }
 

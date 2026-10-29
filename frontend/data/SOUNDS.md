@@ -1,6 +1,6 @@
 # Character recordings
 
-Each roster entry specifies a folder under `frontend/assets/`:
+Each roster entry specifies a folder under `frontend/assets/characters/`:
 
 ```js
 { name: 'Allal', folder: 'allal' }
