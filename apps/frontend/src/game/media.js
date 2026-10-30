@@ -39,19 +39,9 @@ export function playWinSound(game, winner, play = sound => audio.play(sound)) {
   if (sound) play(sound)
 }
 
-// Play once per local character assignment in this page session. Reserve before
-// awaiting playback to prevent duplicate messages from starting the same intro.
-// Failed or muted playback remains retryable on a later assignment.
-const introducedCharacters = new Set()
-
-export async function playIntroSound(player, play = sound => audio.play(sound)) {
-  const character = player?.character
-  const sound = CHARACTERS[character - 1]?.introSound
-  if (!sound || introducedCharacters.has(character)) return false
-  introducedCharacters.add(character)
-  const started = await play(sound)
-  if (!started) introducedCharacters.delete(character)
-  return Boolean(started)
+export async function playIntroSound(player, play = sound => audio.play(sound, { channel: 'intro' })) {
+  const sound = CHARACTERS[player?.character - 1]?.introSound
+  return sound ? Boolean(await play(sound)) : false
 }
 
 // Decode character images before allowing entry to the lobby.

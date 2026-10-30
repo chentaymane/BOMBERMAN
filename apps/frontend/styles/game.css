@@ -330,6 +330,26 @@ kbd {
   font: 600 0.75rem var(--font);
 }
 
+.connection-indicator {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+.connection-indicator.connected {
+  background: #8de3a4;
+  animation: connection-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes connection-pulse {
+  50% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+}
+
 .fps {
   padding: 4px 10px;
   border: 1px solid var(--separator);

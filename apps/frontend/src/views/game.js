@@ -98,6 +98,11 @@ export function gameView(state) {
         type: 'button', class: 'sound-toggle', onClick: toggleSound,
         'aria-label': 'Game sound', 'aria-pressed': state.soundEnabled ? 'true' : 'false',
       }, state.soundEnabled ? 'Sound: on' : 'Sound: off'),
+      h('span', {
+        class: `connection-indicator${state.connected ? ' connected' : ''}`,
+        role: 'img', 'aria-label': state.connected ? 'Connected to server' : 'Disconnected from server',
+        title: state.connected ? 'Connected to server' : 'Disconnected from server',
+      }),
       h('span', { class: 'fps', title: 'Frames per second' }, state.fps + ' FPS'),
     ),
   )

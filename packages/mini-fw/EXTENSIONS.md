@@ -77,6 +77,12 @@ which disconnects when finished. There are no oscillators or synthesized tones.
 Web Audio is only used for decoding recordings and playing them reliably after
 a user gesture. Muting silences active recordings and prevents new playback.
 
+Use `audio.play(url, { channel: 'intro' })` for recordings that should replace
+each other. Starting another clip on that channel stops its current source and
+invalidates pending playback, including when the new file is missing.
+`audio.stop('intro')` stops that channel explicitly. Calls without a channel
+continue to overlap independently, such as simultaneous player deaths.
+
 Missing/invalid files return false without blocking game state updates. Failed
 downloads are retryable on the next death. The application owns the MP3 URLs
 and life-loss detection. The server serves MP3 files with audio/mpeg.

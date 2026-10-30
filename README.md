@@ -85,8 +85,10 @@ of character names and folder names:
 
 Images and five intro recordings are provided. Add recordings as `intro.mp3`,
 `death.mp3` and `win.mp3` in each folder. Missing audio stays silent.
-Intros play once per character for the local player in each page session,
-when the server assigns or confirms their selection. Death recordings play on life loss;
+Intros play for the local player each time the server assigns or confirms a new
+character selection, including returning to a previously chosen character.
+Switching characters stops the previous intro before starting the new one.
+Death recordings play on life loss;
 victory recordings play once when a winner is announced. Forfeits are silent.
 See the [asset guide](apps/frontend/assets/README.md) for the complete layout.
 
