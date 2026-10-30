@@ -5,15 +5,33 @@
 //   - stop at other bombs, which are NOT set off (no chain reaction)
 //   - pass over power-ups lying on the ground (they are not burned)
 // Players standing in the fire are hurt in lives.js.
-const { BOMB_TIME, FIRE_TIME, DIRECTIONS, WALL, BLOCK, EMPTY, POWER_BOMB, POWER_FLAME, POWER_SPEED } = require('./config')
+const {
+  BOMB_TIME, FIRE_TIME, DIRECTIONS, WALL, BLOCK, EMPTY,
+  POWER_BOMB, POWER_FLAME, POWER_SPEED,
+} = require('./config')
 const state = require('./state')
-const { inside, bombAt } = require('./helpers')
+const { inside, bombAt, findPlayer } = require('./helpers')
+
+function queuePlace(client) {
+  const player = findPlayer(client)
+  if (state.phase !== 'playing' || !player || player.lives <= 0) return
+  player.wantsBomb = true
+}
+
+// Placement has its own queue and never waits for the movement cooldown.
+function applyPlacements(now) {
+  for (const player of state.players) {
+    if (!player.wantsBomb) continue
+    player.wantsBomb = false
+    if (player.lives > 0) placeBomb(player, now)
+  }
+}
 
 // Called by the loop when a player asked for a bomb
-function placeBomb(p, now) {
-  const myBombs = state.bombs.filter((b) => b.owner === p).length
-  if (myBombs >= p.maxBombs || bombAt(p.x, p.y)) return
-  state.bombs.push({ x: p.x, y: p.y, owner: p, range: p.range, explodeAt: now + BOMB_TIME })
+function placeBomb(player, now) {
+  const myBombs = state.bombs.filter((b) => b.owner === player).length
+  if (myBombs >= player.maxBombs || bombAt(player.x, player.y)) return
+  state.bombs.push({ x: player.x, y: player.y, owner: player, range: player.range, explodeAt: now + BOMB_TIME })
 }
 
 // Called by the loop: every bomb whose time is up explodes
@@ -62,4 +80,4 @@ function randomPowerUp() {
   return EMPTY
 }
 
-module.exports = { placeBomb, explodeReadyBombs }
+module.exports = { queuePlace, applyPlacements, placeBomb, explodeReadyBombs }

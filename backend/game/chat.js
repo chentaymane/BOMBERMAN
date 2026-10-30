@@ -4,14 +4,14 @@ const { CHAT_DELAY } = require('./config')
 const { findPlayer, broadcast, cleanText } = require('./helpers')
 
 function chat(client, text) {
-  const p = findPlayer(client)
-  if (!p || typeof text !== 'string') return
+  const player = findPlayer(client)
+  if (!player || typeof text !== 'string') return
   const now = Date.now()
-  if (now - p.lastChatAt < CHAT_DELAY) return // spam
+  if (now - player.lastChatAt < CHAT_DELAY) return // spam
   text = cleanText(text, 200)
   if (!text) return
-  p.lastChatAt = now
-  broadcast({ type: 'chat', from: p.name, text })
+  player.lastChatAt = now
+  broadcast({ type: 'chat', from: player.name, text })
 }
 
 module.exports = { chat }

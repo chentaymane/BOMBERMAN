@@ -1,0 +1,26 @@
+/* System setting "Reduce motion" */
+@media (prefers-reduced-motion: reduce) {
+  .player,
+  .progress-bar {
+    transition-property: none;
+  }
+
+  .logo,
+  .bomb::after,
+  .power::after,
+  .fire,
+  .overlay,
+  .result {
+    animation: none;
+  }
+
+  /* still see-through while it can not be hit, without blinking */
+  .player.safe {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  button:active {
+    transform: none;
+  }
+}

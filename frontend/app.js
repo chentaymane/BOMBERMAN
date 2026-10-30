@@ -1,74 +1,41 @@
 import { h, mount } from './framework/index.js'
 import { store } from './store.js'
 import { connect } from './socket.js'
-import { loginView } from './login.js'
-import { lobbyView } from './lobby.js'
-import { chatView } from './chat.js'
-import { gameView } from './game.js'
-import { repeatMove } from './controls.js'
+import { startControls, repeatMove } from './game/controls.js'
+import { loginView } from './views/login.js'
+import { lobbyView } from './views/lobby.js'
+import { gameView } from './views/game.js'
+import { chatView } from './views/chat.js'
+import { loadCharacters, startSounds } from './game/media.js'
 
-let chatId = 0
-let nextGame = null // newest game state, drawn on the next frame
+function appView(state) {
+  if (state.screen === 'login') return loginView(state)
 
-function onMessage(msg) {
-  switch (msg.type) {
-    case 'joined':
-      // Also sent after a 'pick': the character the server really assigned
-      return store.setState((s) => ({
-        screen: s.screen === 'login' ? 'lobby' : s.screen,
-        me: msg.name,
-        myCharacter: msg.character,
-        error: '',
-      }))
-    case 'error':
-      return store.setState({ error: msg.message })
-    case 'lobby':
-      nextGame = null
-      return store.setState({ screen: 'lobby', lobby: msg, game: null, over: false, winner: null, error: '' })
-    case 'state':
-      nextGame = msg
-      return
-    case 'chat':
-      return store.setState((s) => ({
-        messages: [{ id: ++chatId, from: msg.from, text: msg.text }, ...s.messages].slice(0, 50),
-      }))
-    case 'over':
-      return store.setState({ over: true, winner: msg.winner })
-  }
+  const screen = state.screen === 'game' ? gameView(state) : lobbyView(state)
+  return h('div', { class: 'layout' }, screen, chatView(state))
 }
 
-connect(
-  onMessage,
-  () => store.setState({ connected: true }),
-  () => store.setState({ connected: false, screen: 'login', error: "Can't reach the server. Start the backend, then reload this page." }),
-)
+mount(appView, document.getElementById('app'), store)
+startControls()
+startSounds()
+connect()
+loadCharacters()
 
-function view(s) {
-  if (s.screen === 'login') return loginView(s)
-  return h('div', { class: 'layout' }, s.screen === 'game' ? gameView(s) : lobbyView(s), chatView(s))
-}
-
-mount(view, document.getElementById('app'), store)
-
-// Game loop: the newest state from the server is drawn once per frame
 let frames = 0
-let fpsStart = performance.now()
+let fpsStartedAt = performance.now()
 
-function loop(now) {
-  if (nextGame) {
-    store.setState({ screen: 'game', game: nextGame })
-    nextGame = null
-  }
-  repeatMove(now) // keep walking while an arrow key is held
-
-  // Count frames, show the FPS once per second
+function frame(now) {
+  repeatMove(now)
   frames++
-  if (now - fpsStart >= 1000) {
-    store.setState({ fps: Math.round((frames * 1000) / (now - fpsStart)) })
+
+  if (now - fpsStartedAt >= 1000) {
+    store.setState({ fps: Math.round(frames * 1000 / (now - fpsStartedAt)) })
     frames = 0
-    fpsStart = now
+    fpsStartedAt = now
   }
-  requestAnimationFrame(loop)
+
+  store.flush()
+  requestAnimationFrame(frame)
 }
 
-requestAnimationFrame(loop)
+requestAnimationFrame(frame)

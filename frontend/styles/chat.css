@@ -1,0 +1,79 @@
+/* Chat: as tall as the screen next to it, at least 420px */
+.chat {
+  width: min(320px, calc(100vw - 48px));
+  min-height: 420px;
+  padding: 16px;
+  border: 1px solid var(--separator);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.messages {
+  flex: 1 1 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 6px;
+}
+
+.messages.empty {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 0.9375rem;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.message.mine {
+  align-items: flex-end;
+}
+
+.from {
+  padding: 0 12px;
+  color: var(--label-2);
+  font-size: 0.75rem;
+}
+
+.bubble {
+  max-width: 85%;
+  padding: 7px 12px;
+  border-radius: 18px;
+  background: var(--fill);
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.mine .bubble {
+  background: linear-gradient(var(--accent), var(--accent-2));
+  color: var(--on-accent);
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+}
+
+.composer input {
+  flex: 1;
+  min-width: 0;
+}
+
+.composer button {
+  padding: 0 16px;
+}
+

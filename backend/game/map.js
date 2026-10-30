@@ -2,9 +2,10 @@
 const { WIDTH, HEIGHT, EMPTY, WALL, BLOCK, BOMB, FIRE, CORNERS } = require('./config')
 const state = require('./state')
 
-// Corner cell and its 2 neighbours stay empty, so players can escape their first bomb
+// Keep two cells along each corner corridor clear: the first neighbour is
+// still inside a starting bomb's range, so players must be able to go farther.
 function nearCorner(x, y) {
-  return CORNERS.some(([cx, cy]) => Math.abs(cx - x) + Math.abs(cy - y) <= 1)
+  return CORNERS.some(([cx, cy]) => Math.abs(cx - x) + Math.abs(cy - y) <= 2)
 }
 
 // Walls on the border and on every second cell (always the same),
@@ -32,7 +33,7 @@ function createMap() {
 function buildMatrix(now) {
   const matrix = state.tiles.map((row, y) => row.map((tile, x) => (state.fireUntil[y][x] > now ? FIRE : tile)))
   for (const b of state.bombs) matrix[b.y][b.x] = BOMB
-  for (const p of state.players) if (p.lives > 0) matrix[p.y][p.x] = String(p.id)
+  for (const player of state.players) if (player.lives > 0) matrix[player.y][player.x] = String(player.id)
   return matrix
 }
 

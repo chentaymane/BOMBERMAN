@@ -5,10 +5,11 @@
 const { TICK } = require('./config')
 const state = require('./state')
 const { checkLobby, startCountdown, startGame } = require('./lobby')
-const { applyInputs } = require('./moves')
-const { explodeReadyBombs } = require('./bombs')
+const { applyMoves } = require('./moves')
+const { applyPlacements, explodeReadyBombs } = require('./bombs')
 const { applyDamage, checkWinner } = require('./lives')
 const { currentMessage } = require('./messages')
+const { broadcast } = require('./helpers')
 
 function update(now) {
   if (state.phase === 'lobby' && state.waitEndsAt && now >= state.waitEndsAt) startCountdown()
@@ -17,10 +18,11 @@ function update(now) {
     state.phase = 'lobby'
     checkLobby()
   } else if (state.phase === 'playing') {
-    applyInputs(now) // 1. moves and new bombs
-    explodeReadyBombs(now) // 2. explosions
-    applyDamage(now) // 3. players in the fire lose a life
-    checkWinner(now) // 4. last one standing?
+    applyPlacements(now) // 1. new bombs, independent of movement cooldowns
+    applyMoves(now) // 2. movement
+    explodeReadyBombs(now) // 3. explosions
+    applyDamage(now) // 4. players in the fire lose a life
+    checkWinner(now) // 5. last one standing?
   }
 }
 
@@ -28,19 +30,15 @@ function tick() {
   const now = Date.now()
   try {
     update(now)
-    const text = JSON.stringify(currentMessage(now)) // built once for everyone
-    for (const p of state.players) {
-      if (state.lastSent.get(p.client) === text) continue // nothing changed
-      state.lastSent.set(p.client, text)
-      p.client.send(text)
-    }
+    broadcast(currentMessage(now), { deduplicate: true })
   } catch (err) {
     console.error('tick error:', err) // never crash the server
   }
 }
 
 function startLoop() {
-  setInterval(tick, TICK)
+  const timer = setInterval(tick, TICK)
+  return () => clearInterval(timer)
 }
 
 module.exports = { startLoop }

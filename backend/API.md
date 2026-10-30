@@ -28,7 +28,7 @@ socket.onmessage = (event) => {
 
 ## Messages you send
 
-Only 3 types exist. Anything else is ignored.
+Only 5 types exist. Anything else is ignored.
 
 ### 1. Join with a nickname (character optional)
 
@@ -39,7 +39,7 @@ send({ type: 'join', name: 'bob', character: 2 }) // a wanted one
 
 - Name: 1–15 characters. Only letters, numbers, spaces, `_` and `-` are allowed.
 - Names must be unique, ignoring case (`Bob` and `bob` are the same).
-- Character: a number from 1 to 6 (the pictures in `frontend/characters`). Two players can not pick the same one.
+- Character: a number from 1 to 9 (the roster in `frontend/data/characters.js`, with optimized pictures in `frontend/allal/optimized`). Two players can not pick the same one.
 - **Without a character you get a random free one right away** (any invalid value also means "no choice"). The assigned character is in the answer (`joined`) and can be changed in the waiting room.
 - Joining only works while players are waiting (lobby or countdown), with a maximum of 4 players.
 
@@ -54,10 +54,10 @@ send({ type: 'pick', character: 3 })
 - A `pick` is answered with a `joined` message (your character), and the new `lobby` is sent to all players.
 - The `lobby` message lists `taken`, the characters that are locked, so the picker can grey them out.
 
-### 3. Move or drop a bomb
+### 3. Move
 
 ```js
-send({ type: 'move', move: 'up' })   // 'up' | 'down' | 'left' | 'right' | 'bomb'
+send({ type: 'move', move: 'up' })   // 'up' | 'down' | 'left' | 'right'
 ```
 
 - Send **only the direction**. Never send a position: the server knows where you are and checks every move against the real map.
@@ -65,7 +65,20 @@ send({ type: 'move', move: 'up' })   // 'up' | 'down' | 'left' | 'right' | 'bomb
 - The server waits a short time between two moves of the same player (200 ms, less with speed power-ups). Sending faster does nothing, except one move that arrives a few ms early is kept and played when the wait is over.
 - Send a move on `keydown`, then again about every 50 ms while the key is held (the frontend does it in its game loop, not with the keyboard's own repeat). **Do not send a move on every frame.**
 
-### 4. Chat
+### 4. Place a bomb
+
+```js
+send({ type: 'place' })
+```
+
+- Places a bomb at your server-known position on the next simulation tick.
+- Only living players in an active match can place bombs.
+- Placement is independent of movement cooldowns and does not replace a queued direction.
+- Bomb capacity and occupied-cell checks still apply. Repeated requests within one tick are combined.
+- Space sends one placement request per press; holding Space does not repeat placement.
+- `move` accepts directions only; `{ type: "move", move: "bomb" }` is ignored.
+
+### 5. Chat
 ```js
 send({ type: 'chat', text: 'hello' })
 ```
@@ -105,6 +118,9 @@ Sent each time something changes (player joins or leaves, a second passes, someo
 |---------------|-------------------------------------------------------------------|
 | `players`     | players in the lobby (name and character) → counter = `players.length` |
 | `taken`       | characters already locked (same order as `players`) → grey these out in the picker |
+| `maxPlayers` | room capacity from server configuration; use for slots and the player counter |
+| `waitDuration` | total waiting period in seconds; use as the wait progress maximum |
+| `readyDuration` | total ready countdown in seconds; use as the ready progress maximum |
 | `waitSeconds` | seconds left of the 20s wait for more players, `null` if not running |
 | `countdown`   | seconds left of the 10s "get ready" timer, `null` if not running  |
 
@@ -126,7 +142,7 @@ Sent while the game runs, only when something changed.
     ["#",".","#","X"]
   ],
   "players": [
-    { "id": 1, "name": "bob", "character": 2, "x": 1, "y": 1, "lives": 3, "bombs": 1, "range": 1, "speed": 0, "safe": false }
+    { "id": 1, "name": "bob", "character": 2, "x": 1, "y": 1, "lives": 3, "bombs": 1, "range": 1, "speed": 0, "moveDelay": 200, "safe": false }
   ],
   "bombs": [ { "x": 3, "y": 2 } ]
 }
@@ -151,12 +167,14 @@ Sent while the game runs, only when something changed.
 | field   | meaning                                                       |
 |---------|---------------------------------------------------------------|
 | `id`    | number shown in the map (`1`–`4`), also gives the start corner |
-| `character` | picked character (1–6)                                   |
+| `character` | picked character (1–9)                                   |
 | `x`,`y` | position (same as in the map)                                 |
 | `lives` | lives left (starts at 3, `0` = dead and removed from the map) |
+| `forfeited` | `true` when an alive player lost their connection during the match; show "Forfeit" instead of "Out" |
 | `bombs` | how many bombs the player can drop at the same time           |
 | `range` | explosion range                                               |
 | `speed` | speed level (0–4)                                             |
+| `moveDelay` | milliseconds between moves, calculated by the server; use for CSS transition duration |
 | `safe`  | `true` = cannot be hit (2s after losing a life), so make the player blink |
 
 **`bombs`**: list of all bombs on the map. Use it to draw bombs, because when a player stands on a bomb, the map shows the player and not the bomb.
@@ -208,11 +226,12 @@ socket.onmessage = (event) => {
 // Change character while waiting (refused with an 'error' if somebody took it)
 send({ type: 'pick', character: 4 })
 
-const keys = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', ' ': 'bomb' }
+const keys = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' }
 // Simplest version: the keyboard repeats keydown while a key is held, so holding keeps moving
 // (the frontend repeats held keys itself every 50 ms, which starts faster than the keyboard)
 document.addEventListener('keydown', (e) => {
-  if (keys[e.key]) send({ type: 'move', move: keys[e.key] })
+  if (e.key === ' ' && !e.repeat) send({ type: 'place' })
+  else if (keys[e.key]) send({ type: 'move', move: keys[e.key] })
 })
 ```
 
@@ -226,4 +245,16 @@ document.addEventListener('keydown', (e) => {
 | more than 200 messages / second   | you are disconnected             |
 | message bigger than 4KB           | you are disconnected             |
 | more than 50 connections at once  | new connections are refused      |
-| closing the tab during a game     | you are removed from the game    |
+| closing the tab while alive during a game | all remaining lives are forfeited; the last survivor wins |
+
+The server sends WebSocket ping frames every 15 seconds. Browsers answer pong
+frames automatically. A connection that has not answered by the next check is
+terminated and handled as a disconnect (within about 30 seconds of a silent
+network loss). No extra application JSON messages or client connection are needed.
+
+Forfeited players remain in game snapshots with `lives: 0` and `forfeited: true`
+until the round ends. Their pending movement/placement requests are cleared;
+bombs they already placed keep their fuses. Disconnected players receive no
+further messages and are removed before the next lobby counter is calculated.
+An already eliminated spectator leaving does not count as a forfeit. Disconnects
+after a match has ended do not change its winner or restart its result timer.
