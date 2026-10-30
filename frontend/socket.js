@@ -1,6 +1,6 @@
 import { createJsonSocket } from './framework/websocket.js'
 import { store } from './store.js'
-import { playDeathSounds, playWinSound } from './game/media.js'
+import { playDeathSounds, playIntroSound, playWinSound } from './game/media.js'
 
 const MAX_CHAT_MESSAGES = 50
 let nextChatId = 0
@@ -10,13 +10,18 @@ let nextChatId = 0
 export function handleServerMessage(message) {
   if (!message || typeof message.type !== 'string') return
   switch (message.type) {
-    case 'joined':
+    case 'joined': {
+      const { me } = store.getState()
       store.setState(state => ({
         screen: state.screen === 'login' ? 'lobby' : state.screen,
         me: message.name,
         error: '',
       }))
+      // Every 'joined' message is this client's own assignment (the first one
+      // sets `me`). Handled here, not in a view, so renders never replay it.
+      if (!me || me === message.name) playIntroSound({ character: message.character })
       break
+    }
     case 'error':
       store.setState({ error: message.message })
       break

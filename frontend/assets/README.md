@@ -43,5 +43,20 @@ Life loss plays the affected character's `death.mp3`. A winner announcement play
 that character's `win.mp3` once per round on connected clients. Draws are silent.
 The sound toggle controls both effects; concurrent events can overlap.
 
+Introduction recordings are kept in their own folder per character under
+`sounds/`, with the original filename declared as `intro` in the roster:
+
+```text
+sounds/
+  allal/3lal_20-25.mp3
+  cheb-larbi/cheb_larbi_clip_17_to_19.mp3
+  driss/audio_00m03s_to_00m05s.mp3
+  mmi-na3ima/audio_00m37s_to_00m39s (1).mp3
+  wldchinwya/audio_first_3_seconds (1).mp3
+```
+
+The local player hears their own clip once, right after the character is
+assigned or picked; characters without a clip stay silent.
+
 Image preloading lives in `frontend/game/media.js`. Source PNG
 artwork remains separately in `frontend/allal/`.

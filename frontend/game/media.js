@@ -39,6 +39,22 @@ export function playWinSound(game, winner, play = sound => audio.play(sound)) {
   if (sound) play(sound)
 }
 
+// Introduction recordings belong to the local player and play once per
+// character: the server resends 'joined' after every pick and reconnect, so
+// repeats stay silent. A failed start (autoplay blocked, missing file) is
+// undone, so the next assignment event can retry it.
+const introducedCharacters = new Set()
+
+export async function playIntroSound(player, play = sound => audio.play(sound)) {
+  const character = player?.character
+  const sound = CHARACTERS[character - 1]?.introSound
+  if (!sound || introducedCharacters.has(character)) return false
+  introducedCharacters.add(character)
+  const started = await play(sound)
+  if (!started) introducedCharacters.delete(character)
+  return Boolean(started)
+}
+
 // Decode character images before allowing entry to the lobby.
 // Keeping the decoded images alive also avoids discarding them before that render.
 let images = []
