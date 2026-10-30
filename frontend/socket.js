@@ -11,15 +11,12 @@ export function handleServerMessage(message) {
   if (!message || typeof message.type !== 'string') return
   switch (message.type) {
     case 'joined': {
-      const { me } = store.getState()
       store.setState(state => ({
         screen: state.screen === 'login' ? 'lobby' : state.screen,
         me: message.name,
         error: '',
       }))
-      // Every 'joined' message is this client's own assignment (the first one
-      // sets `me`). Handled here, not in a view, so renders never replay it.
-      if (!me || me === message.name) playIntroSound({ character: message.character })
+      playIntroSound(message)
       break
     }
     case 'error':

@@ -38,7 +38,7 @@ immediately. Each player starts in a different corner with three lives.
 | Arrow keys | Move; hold to keep moving |
 | Space | Place a bomb |
 | Esc | Leave the chat input and return to game controls |
-| Sound button | Mute or unmute death and victory recordings |
+| Sound button | Mute or unmute character recordings |
 
 ## Game rules
 
@@ -71,6 +71,7 @@ Each character has a folder under `frontend/assets/characters/`:
 ```text
 frontend/assets/characters/allal/
   player.webp
+  intro.mp3
   death.mp3
   win.mp3
 ```
@@ -82,8 +83,10 @@ of character names and folder names:
 { name: 'Allal', folder: 'allal' }
 ```
 
-Images are provided. Add your MP3 recordings as `death.mp3` and `win.mp3` in
-each folder. Missing audio stays silent. Death recordings play on life loss;
+Images and five intro recordings are provided. Add recordings as `intro.mp3`,
+`death.mp3` and `win.mp3` in each folder. Missing audio stays silent.
+Intros play once per character for the local player in each page session,
+when the server assigns or confirms their selection. Death recordings play on life loss;
 victory recordings play once when a winner is announced. Forfeits are silent.
 See the [asset guide](frontend/assets/README.md) for the complete layout.
 

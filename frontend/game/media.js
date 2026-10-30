@@ -39,10 +39,9 @@ export function playWinSound(game, winner, play = sound => audio.play(sound)) {
   if (sound) play(sound)
 }
 
-// Introduction recordings belong to the local player and play once per
-// character: the server resends 'joined' after every pick and reconnect, so
-// repeats stay silent. A failed start (autoplay blocked, missing file) is
-// undone, so the next assignment event can retry it.
+// Play once per local character assignment in this page session. Reserve before
+// awaiting playback to prevent duplicate messages from starting the same intro.
+// Failed or muted playback remains retryable on a later assignment.
 const introducedCharacters = new Set()
 
 export async function playIntroSound(player, play = sound => audio.play(sound)) {
