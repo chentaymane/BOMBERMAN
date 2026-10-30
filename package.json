@@ -1,0 +1,15 @@
+{
+  "name": "bomberman-dom",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "start": "npm run start --workspace=bomberman-backend"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

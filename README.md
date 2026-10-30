@@ -3,16 +3,16 @@
 A browser-based multiplayer Bomberman game for 2 to 4 players. Destroy blocks,
 collect power-ups and survive until you are the last player standing.
 
-The interface uses our custom [mini-framework](frontend/framework/), DOM elements
+The interface uses our custom [mini-framework](packages/mini-fw/), DOM elements
 and CSS. There is no canvas, WebGL or third-party UI framework. The Node.js
 server uses [ws](https://github.com/websockets/ws) for real-time communication.
 
 ## Run locally
 
-Requires Node.js 18 or newer and a modern browser.
+Requires Node.js 18 or newer and a modern browser with import map support.
+Run these commands from the repository root.
 
 ```sh
-cd backend
 npm install
 npm start
 ```
@@ -66,17 +66,17 @@ destroyed by flames.
 
 ## Character assets
 
-Each character has a folder under `frontend/assets/characters/`:
+Each character has a folder under `apps/frontend/assets/characters/`:
 
 ```text
-frontend/assets/characters/allal/
+apps/frontend/assets/characters/allal/
   player.webp
   intro.mp3
   death.mp3
   win.mp3
 ```
 
-The roster in [characters.js](frontend/data/characters.js) is the single source
+The roster in [characters.js](apps/frontend/src/data/characters.js) is the single source
 of character names and folder names:
 
 ```js
@@ -88,32 +88,45 @@ Images and five intro recordings are provided. Add recordings as `intro.mp3`,
 Intros play once per character for the local player in each page session,
 when the server assigns or confirms their selection. Death recordings play on life loss;
 victory recordings play once when a winner is announced. Forfeits are silent.
-See the [asset guide](frontend/assets/README.md) for the complete layout.
+See the [asset guide](apps/frontend/assets/README.md) for the complete layout.
 
 ## Project structure
 
 ```text
-backend/
-  server.js       application startup
-  transport/      HTTP file serving and WebSocket connections
-  game/           authoritative rules, state and simulation loop
-  API.md          WebSocket message contract
-frontend/
-  app.js          startup, screen selection and animation frames
-  assets/
-    characters/   one folder per character
-    textures/     shared map and bomb SVGs
-  data/           shared character roster
-  store.js        application state
-  socket.js       connection and incoming message handling
-  views/          login, waiting room, game and chat markup
-  game/           keyboard controls, cached tiles and media loading/playback
-  styles/         styles grouped by purpose
-  framework/      custom framework core and reusable extensions
-  allal/          original character PNG artwork
+package.json           workspace configuration and root start command
+packages/
+  mini-fw/             our custom frontend framework and reusable extensions
+apps/
+  backend/
+    package.json       server dependencies and start command
+    API.md             WebSocket message contract
+    src/
+      server.js        HTTP, WebSockets and simulation startup
+      transport/       static file serving and WebSocket connections
+      game-logic/      authoritative rules, state and simulation loop
+  frontend/
+    package.json       local mini-fw dependency
+    index.html         page and mini-fw browser import map
+    src/
+      main.js          startup, screen selection and animation frames
+      store.js         application state
+      network/         WebSocket connection and message handling
+      game/            keyboard controls, cached tiles and media
+      views/           login, waiting room, game and chat markup
+      data/            single character roster and derived asset URLs
+    assets/
+      characters/      one folder per character
+      textures/        shared map and bomb SVGs
+    styles/            styles grouped by purpose
+    allal/             original character PNG artwork
 ```
 
 ## Architecture and performance
+
+The root npm workspace links `mini-fw` locally. The frontend imports `mini-fw`
+and its extensions by package name; the import map resolves them in the browser.
+The backend serves both `apps/frontend` and `packages/mini-fw` on the same origin.
+No bundler or additional UI framework is needed.
 
 The server validates player intentions and advances the simulation every 20 ms.
 Movement and bomb placement use separate commands. Clients render server
@@ -124,10 +137,8 @@ tiles reuse virtual nodes, and player animation uses CSS transforms. The FPS
 counter provides a live indication of rendering frequency. The target is at
 least 60 FPS; actual performance depends on the device and browser.
 
-- [Architecture and module responsibilities](ARCHITECTURE.md)
-- [WebSocket API](backend/API.md)
-- [Framework extension APIs](frontend/framework/EXTENSIONS.md)
-- [Performance notes](PERFORMANCE.md)
+- [WebSocket API](apps/backend/API.md)
+- [Framework extension APIs](packages/mini-fw/EXTENSIONS.md)
 
 ## Authors
 
