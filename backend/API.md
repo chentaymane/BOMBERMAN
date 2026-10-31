@@ -39,7 +39,7 @@ send({ type: 'join', name: 'bob', character: 2 }) // a wanted one
 
 - Name: 1–15 characters. Only letters, numbers, spaces, `_` and `-` are allowed.
 - Names must be unique, ignoring case (`Bob` and `bob` are the same).
-- Character: a number from 1 to 12 (the roster in `frontend/data/characters.js`, pictures and sounds in `frontend/assets/characters/`). Two players can not pick the same one.
+- Character: a number from 1 to 12 (the roster in `frontend/data/characters.js`, pictures and intros in `frontend/assets/characters/`). Two players can not pick the same one.
 - **Without a character you get a random free one right away** (any invalid value also means "no choice"). The assigned character is in the answer (`joined`) and can be changed in the waiting room.
 - Joining only works while players are waiting (lobby or countdown), with a maximum of 4 players.
 
@@ -57,13 +57,15 @@ send({ type: 'pick', character: 3 })
 ### 3. Move
 
 ```js
-send({ type: 'move', move: 'up' })   // 'up' | 'down' | 'left' | 'right'
+send({ type: 'move', move: 'up' })   // arrow key pressed: 'up' | 'down' | 'left' | 'right'
+send({ type: 'move', move: null })   // all arrow keys released
 ```
 
 - Send **only the direction**. Never send a position: the server knows where you are and checks every move against the real map.
 - Moves that are not possible are ignored (wall, block, bomb, too fast, dead player).
-- The server waits a short time between two moves of the same player (200 ms, less with speed power-ups). Sending faster does nothing, except one move that arrives a few ms early is kept and played when the wait is over.
-- Send a move on `keydown`, then again about every 50 ms while the key is held (the frontend does it in its game loop, not with the keyboard's own repeat). **Do not send a move on every frame.**
+- Send a direction once when the key goes down, and `null` when no arrow key is held anymore. **Never repeat it**: the server does the walking.
+- Every press gives exactly one step, even a very short tap. While the key stays down the player keeps walking, one step every 200 ms (less with speed power-ups).
+- Pressing another arrow while one is held switches direction; releasing it goes back to the one still held (the frontend sends the new direction).
 
 ### 4. Place a bomb
 

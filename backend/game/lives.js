@@ -8,7 +8,8 @@ function applyDamage(now) {
   for (const player of state.players) {
     if (player.lives <= 0 || now < player.safeUntil || state.fireUntil[player.y][player.x] <= now) continue
     player.lives--
-    player.wantedMove = null
+    player.heldMove = null
+    player.pendingMove = null
     player.wantsBomb = false
     if (player.lives > 0) {
       // Back to own corner, invincible longer than any fire lasts
@@ -33,7 +34,8 @@ function forfeit(player, now) {
   if (state.phase !== 'playing' || player.lives <= 0) return
   player.lives = 0
   player.forfeited = true
-  player.wantedMove = null
+  player.heldMove = null
+  player.pendingMove = null
   player.wantsBomb = false
   checkWinner(now)
 }
