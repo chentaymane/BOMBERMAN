@@ -35,10 +35,10 @@ immediately. Each player starts in a different corner with three lives.
 
 | Control | Action |
 | --- | --- |
-| Arrow keys | Move; hold to keep moving |
+| Arrow keys | One step per press; hold to keep moving |
 | Space | Place a bomb |
 | Esc | Leave the chat input and return to game controls |
-| Sound button | Mute or unmute character recordings |
+| Sound button | Mute or unmute the character intros |
 
 ## Game rules
 
@@ -70,11 +70,8 @@ Each character has a folder under `frontend/assets/characters/`:
 
 ```text
 frontend/assets/characters/allal/
-  player.webp
-  intro.mp3    every time you get or pick this character
-  damage.mp3   this character loses a life
-  kill.mp3     this character loses its last life
-  win.mp3      this character wins the round
+  player.webp   the character picture
+  intro.mp3     plays every time you get or pick this character
 ```
 
 The roster in [characters.js](frontend/data/characters.js) is the single source
@@ -84,9 +81,7 @@ of character names and folder names:
 { name: 'Allal', folder: 'allal' }
 ```
 
-Drop a file in the folder to enable it; missing audio stays silent and forfeits
-are silent. The sound button (waiting room and game) mutes everything.
-See [SOUNDS.md](frontend/data/SOUNDS.md) for details.
+A missing intro stays silent. The sound button (waiting room and game) mutes it.
 
 ## Project structure
 
@@ -118,9 +113,8 @@ Movement and bomb placement use separate commands. Clients render server
 snapshots; they do not decide positions, damage or winners.
 
 Browser updates are batched into one render per animation frame. Unchanged
-tiles reuse virtual nodes, and player animation uses CSS transforms. The FPS
-counter provides a live indication of rendering frequency. The target is at
-least 60 FPS; actual performance depends on the device and browser.
+tiles reuse virtual nodes, and player animation uses CSS transforms. Check the
+frame rate with the browser DevTools (Performance tab, frame rendering stats).
 
 Paint and layers are kept low on purpose: the map has its own layer, so a bomb or a
 flame repaints only the map; players move with `transform` on their own layers;
@@ -128,7 +122,6 @@ the only looping animations (ticking bomb, blinking after a hit) are
 transform/opacity animations that run on the compositor.
 
 - [WebSocket API](backend/API.md)
-- [Character sounds](frontend/data/SOUNDS.md)
 
 ## Authors
 
