@@ -15,7 +15,6 @@ export const initialState = {
   game: null, // last 'state' message from the server
   over: false, // game finished
   winner: null, // winner name, null if nobody survived
-  fps: 0,
   soundEnabled: true,
   messages: [], // chat, newest first
   draft: '', // chat input
