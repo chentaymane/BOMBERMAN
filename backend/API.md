@@ -64,7 +64,7 @@ send({ type: 'move', move: null })   // all arrow keys released
 - Send **only the direction**. Never send a position: the server knows where you are and checks every move against the real map.
 - Moves that are not possible are ignored (wall, block, bomb, too fast, dead player).
 - Send a direction once when the key goes down, and `null` when no arrow key is held anymore. **Never repeat it**: the server does the walking.
-- Every press gives exactly one step, even a very short tap. While the key stays down the player keeps walking, one step every 200 ms (less with speed power-ups).
+- Every press gives exactly one step. If the key is still down after 300 ms, the player keeps walking in a line, one step every 200 ms (less with speed power-ups), until the key is released.
 - Pressing another arrow while one is held switches direction; releasing it goes back to the one still held (the frontend sends the new direction).
 
 ### 4. Place a bomb

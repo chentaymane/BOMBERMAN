@@ -35,7 +35,7 @@ immediately. Each player starts in a different corner with three lives.
 
 | Control | Action |
 | --- | --- |
-| Arrow keys | One step per press; hold to keep moving |
+| Arrow keys | One step per press; hold (over 0.3 s) to keep walking |
 | Space | Place a bomb |
 | Esc | Leave the chat input and return to game controls |
 | Sound button | Mute or unmute the character intros |
