@@ -142,6 +142,17 @@ button:disabled {
   font-size: 0.9375rem;
 }
 
+/* Secondary action: same shape, quieter than the main yellow button */
+.secondary-button {
+  background: var(--fill);
+  color: var(--label);
+  box-shadow: 0 4px 0 #101728;
+}
+
+.secondary-button:active {
+  box-shadow: 0 1px 0 #101728;
+}
+
 /* Page layout: screen on the left, chat on the right (stacked on small windows) */
 .layout {
   display: flex;

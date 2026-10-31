@@ -24,6 +24,13 @@ loadCharacters()
 let frames = 0
 let fpsStartedAt = performance.now()
 
+// requestAnimationFrame stops in a hidden tab; restart the sample window so the
+// first visible frame does not report an artificially low FPS.
+document.addEventListener('visibilitychange', () => {
+  frames = 0
+  fpsStartedAt = performance.now()
+})
+
 function frame(now) {
   repeatMove(now)
   frames++

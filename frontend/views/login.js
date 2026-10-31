@@ -1,6 +1,6 @@
 import { h } from '../framework/index.js'
 import { store } from '../store.js'
-import { send } from '../socket.js'
+import { connect, send } from '../socket.js'
 import { loadCharacters } from '../game/media.js'
 
 function join(event) {
@@ -12,10 +12,15 @@ function join(event) {
   send({ type: 'join', name: name.trim() })
 }
 
+function retryConnection() {
+  store.setState({ error: '' })
+  connect()
+}
+
 export function loginView(state) {
   const ready = state.charactersStatus === 'ready'
   let buttonLabel = 'Join Game'
-  if (!state.connected) buttonLabel = 'Connecting…'
+  if (!state.connected) buttonLabel = state.error ? 'Server offline' : 'Connecting…'
   else if (state.charactersStatus === 'loading') buttonLabel = 'Loading characters…'
 
   return h('form', { class: 'card', onSubmit: join },
@@ -25,15 +30,20 @@ export function loginView(state) {
     h('label', { class: 'field' },
       h('span', { class: 'field-label' }, 'Nickname'),
       h('input', {
-        placeholder: 'Letters, numbers, _ or -',
+        placeholder: '1–15 letters, numbers, spaces, _ or -',
         maxlength: 15,
         value: state.name,
         autofocus: true,
+        autocomplete: 'off',
+        spellcheck: 'false',
         onInput: (event) => store.setState({ name: event.target.value, error: '' }),
       }),
     ),
     h('p', { class: 'secondary' }, 'You will get a random character, change it in the waiting room.'),
     h('button', { type: 'submit', disabled: !state.connected || !ready }, buttonLabel),
+    !state.connected && state.error && h('button', {
+      type: 'button', class: 'secondary-button', onClick: retryConnection,
+    }, 'Retry connection'),
     state.charactersStatus === 'error' && h('div', { class: 'field', role: 'alert' },
       h('p', { class: 'error' }, "Couldn't load the characters. Check your connection and retry."),
       h('button', { type: 'button', onClick: loadCharacters }, 'Retry loading characters'),

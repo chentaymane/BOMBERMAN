@@ -1,7 +1,7 @@
 import { on } from '../framework/index.js'
-import { createAudioPlayer } from '../framework/audio.js'
+import { createAudioPlayer } from '../lib/audio.js'
 import { CHARACTERS } from '../data/characters.js'
-import { preloadImages } from '../framework/images.js'
+import { preloadImages } from '../lib/images.js'
 import { store } from '../store.js'
 
 const audio = createAudioPlayer()
@@ -25,7 +25,7 @@ export function toggleSound() {
 // Compare consecutive network snapshots, not renders: several snapshots may
 // arrive within one animation frame. Initial state and forfeits are silent.
 export function playDeathSounds(previousGame, nextGame, play = sound => audio.play(sound)) {
-  if (!previousGame) return
+  if (!previousGame?.players || !nextGame?.players) return
   for (const player of nextGame.players) {
     const previous = previousGame.players.find(other => other.id === player.id)
     const sound = CHARACTERS[player.character - 1]?.deathSound
@@ -34,7 +34,7 @@ export function playDeathSounds(previousGame, nextGame, play = sound => audio.pl
 }
 
 export function playWinSound(game, winner, play = sound => audio.play(sound)) {
-  const player = game?.players.find(player => player.name === winner)
+  const player = game?.players?.find(player => player.name === winner)
   const sound = player && CHARACTERS[player.character - 1]?.winSound
   if (sound) play(sound)
 }

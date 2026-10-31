@@ -1,9 +1,9 @@
 # Reusable extensions
 
-These modules add reusable browser utilities alongside the existing framework.
-The original `index.js`, `dom.js`, `events.js`, `state.js` and `router.js` stay
-unchanged. Import extensions directly from their files; no build step or extra
-package is required.
+These browser utilities live next to the mini-framework, not inside it. The
+`frontend/framework/` folder stays unchanged (`index.js`, `dom.js`, `events.js`,
+`state.js`, `router.js`). Import an extension directly from its file; no build
+step or extra package is required.
 
 ## JSON WebSocket client
 
@@ -68,14 +68,21 @@ loading screens and application state are deliberately owned by the caller.
 
 ## Recorded audio playback
 
-Import createAudioPlayer from ./audio.js, unlock it from a user gesture, then
-call await audio.play('/assets/characters/allal/death.mp3'). Use audio.setEnabled(false) to mute.
+Import `createAudioPlayer` from `./audio.js`, unlock it from a user gesture, then
+call `await audio.play('/assets/characters/allal/death.mp3')`. Use
+`audio.setEnabled(false)` to mute.
 
 The player downloads and decodes actual audio files. Decoded buffers are cached
 by URL, including concurrent requests. Each playback gets its own buffer source,
 which disconnects when finished. There are no oscillators or synthesized tones.
 Web Audio is only used for decoding recordings and playing them reliably after
 a user gesture. Muting silences active recordings and prevents new playback.
+
+Use `audio.play(url, { channel: 'intro' })` for recordings that should replace
+each other. Starting another clip on that channel stops its current source and
+invalidates pending playback, including when the new file is missing.
+`audio.stop('intro')` stops that channel explicitly. Calls without a channel
+continue to overlap independently, such as simultaneous player deaths.
 
 Missing/invalid files return false without blocking game state updates. Failed
 downloads are retryable on the next death. The application owns the MP3 URLs

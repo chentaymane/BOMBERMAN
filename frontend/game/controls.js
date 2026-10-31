@@ -16,7 +16,21 @@ function clearHeldMoves() {
 }
 
 function isTyping(element) {
-  return element?.tagName === 'INPUT' || element?.tagName === 'TEXTAREA'
+  return element?.tagName === 'INPUT' || element?.tagName === 'TEXTAREA' || element?.isContentEditable === true
+}
+
+// Space must keep activating a focused button/link instead of dropping a bomb.
+function isButtonLike(element) {
+  const tag = element?.tagName
+  return tag === 'BUTTON' || tag === 'A' || tag === 'SELECT'
+}
+
+// No input while waiting, after the game ended, or while our player is out.
+function canPlay() {
+  const state = store.getState()
+  if (state.screen !== 'game' || state.over || !state.game) return false
+  const me = state.game.players.find(player => player.name === state.me)
+  return !me || me.lives > 0
 }
 
 function handleKeyDown(event) {
@@ -25,9 +39,13 @@ function handleKeyDown(event) {
     return
   }
 
+  // Leave browser shortcuts (tab switching, page navigation...) untouched.
+  if (event.altKey || event.ctrlKey || event.metaKey) return
+
   const move = KEY_MOVES[event.key]
   const placing = event.key === ' '
-  if ((!move && !placing) || isTyping(event.target) || store.getState().screen !== 'game') return
+  if ((!move && !placing) || isTyping(event.target) || !canPlay()) return
+  if (placing && isButtonLike(event.target)) return
   event.preventDefault()
   if (event.repeat) return
 
@@ -60,7 +78,7 @@ export function startControls() {
 }
 
 export function repeatMove(now) {
-  if (store.getState().screen !== 'game' || isTyping(document.activeElement)) {
+  if (!canPlay() || isTyping(document.activeElement)) {
     clearHeldMoves()
     return
   }

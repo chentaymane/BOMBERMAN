@@ -1,4 +1,4 @@
-import { createJsonSocket } from './framework/websocket.js'
+import { createJsonSocket } from './lib/websocket.js'
 import { store } from './store.js'
 import { playDeathSounds, playIntroSound, playWinSound } from './game/media.js'
 
@@ -51,11 +51,23 @@ export function handleServerMessage(message) {
 }
 
 function handleDisconnect() {
+  // Drop everything that belongs to the closed session. The nickname is kept so
+  // the player can retry without typing it again.
   store.setState({
     connected: false,
     screen: 'login',
+    me: '',
     game: null,
-    error: "Can't reach the server. Start the backend, then reload this page.",
+    over: false,
+    winner: null,
+    lobby: {
+      players: [], taken: [],
+      maxPlayers: 4, waitDuration: 20, readyDuration: 10,
+      waitSeconds: null, countdown: null,
+    },
+    messages: [],
+    draft: '',
+    error: "Connection lost. Retry, or start the backend and retry again.",
   })
 }
 
@@ -66,7 +78,7 @@ export const send = socket.send
 export function connect() {
   return socket.connect({
     onMessage: handleServerMessage,
-    onOpen: () => store.setState({ connected: true }),
+    onOpen: () => store.setState({ connected: true, error: '' }),
     onClose: handleDisconnect,
   })
 }

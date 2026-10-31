@@ -3,8 +3,8 @@
 A browser-based multiplayer Bomberman game for 2 to 4 players. Destroy blocks,
 collect power-ups and survive until you are the last player standing.
 
-The interface uses our custom [mini-framework](frontend/framework/), DOM elements
-and CSS. There is no canvas, WebGL or third-party UI framework. The Node.js
+The interface uses our custom [mini-framework](frontend/framework/), reusable
+browser [extensions](frontend/lib/), DOM elements and CSS. There is no canvas, WebGL or third-party UI framework. The Node.js
 server uses [ws](https://github.com/websockets/ws) for real-time communication.
 
 ## Run locally
@@ -109,7 +109,8 @@ frontend/
   views/          login, waiting room, game and chat markup
   game/           keyboard controls, cached tiles and media loading/playback
   styles/         styles grouped by purpose
-  framework/      custom framework core and reusable extensions
+  framework/      custom framework core (unchanged)
+  lib/            reusable browser extensions (socket, batched store, audio, images)
   allal/          original character PNG artwork
 ```
 
@@ -126,7 +127,7 @@ least 60 FPS; actual performance depends on the device and browser.
 
 - [Architecture and module responsibilities](ARCHITECTURE.md)
 - [WebSocket API](backend/API.md)
-- [Framework extension APIs](frontend/framework/EXTENSIONS.md)
+- [Framework extension APIs](frontend/lib/EXTENSIONS.md)
 - [Performance notes](PERFORMANCE.md)
 
 ## Authors

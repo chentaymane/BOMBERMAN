@@ -6,6 +6,10 @@ import { toggleSound } from '../game/media.js'
 // Last drawn position of each player, to spot a respawn (a jump of more than one cell)
 const lastPositions = {}
 
+function characterStyle(character) {
+  return CHARACTERS[character - 1]?.style ?? {}
+}
+
 // The server sends the movement duration so animation and game rules agree.
 function playerView(player, me) {
   const prev = lastPositions[player.id]
@@ -15,9 +19,9 @@ function playerView(player, me) {
     key: player.id,
     class: `player c${player.character}${player.safe ? ' safe' : ''}${player.name === me ? ' me' : ''}`,
     style: {
-      ...CHARACTERS[player.character - 1].style,
+      ...characterStyle(player.character),
       transform: `translate(calc(${player.x} * var(--cell)), calc(${player.y} * var(--cell)))`,
-      transitionDuration: respawn ? '0ms' : player.moveDelay + 'ms', // no slide back to the corner
+      transitionDuration: respawn ? '0ms' : (player.moveDelay ?? 0) + 'ms', // no slide back to the corner
     },
   }, h('span', { class: 'tag' }, player.name))
 }
@@ -31,7 +35,7 @@ function chipView(player, me) {
   if (!alive) classes += ' out'
   return h('li', { key: player.id, class: classes },
     h('span', {
-      class: 'avatar c' + player.character, style: CHARACTERS[player.character - 1].style,
+      class: 'avatar c' + player.character, style: characterStyle(player.character),
     }),
     h('span', { class: 'chip-text' },
       h('span', { class: 'chip-top' },
@@ -66,7 +70,7 @@ function resultView(state, game) {
   return h('div', { class: 'overlay' },
     h('div', { class: 'result', role: 'alert' },
       winner && h('span', {
-        class: 'avatar c' + winner.character, style: CHARACTERS[winner.character - 1].style,
+        class: 'avatar c' + winner.character, style: characterStyle(winner.character),
       }),
       h('h2', {}, title),
       h('p', { class: 'secondary' }, 'Back to the waiting room in 5 s…'),
@@ -76,6 +80,17 @@ function resultView(state, game) {
 
 export function gameView(state) {
   const game = state.game
+  // Defensive: a render can never be asked for a board that has not arrived yet.
+  if (!game?.map?.length || !Array.isArray(game.players)) {
+    return h('div', { class: 'card' },
+      h('p', { class: 'secondary' }, 'Waiting for the game to start…'),
+    )
+  }
+
+  // Forget players from the previous round (ids are reused, positions are re-read).
+  const ids = new Set(game.players.map(player => String(player.id)))
+  for (const id of Object.keys(lastPositions)) if (!ids.has(id)) delete lastPositions[id]
+
   const me = game.players.find(player => player.name === state.me)
   const alive = game.players.filter(player => player.lives > 0)
   return h('div', {
@@ -89,7 +104,7 @@ export function gameView(state) {
         alive.map(player => playerView(player, state.me)),
       ),
       me && me.lives === 0 && !state.over
-        && h('div', { class: 'banner' }, "You're out! Watching…"),
+        && h('div', { class: 'banner', role: 'status' }, "You're out! Watching…"),
       state.over && resultView(state, game),
     ),
     h('div', { class: 'game-footer' },

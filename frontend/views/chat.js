@@ -35,6 +35,7 @@ export function chatView(state) {
         'aria-label': 'Message',
         placeholder: 'Message',
         maxlength: 200,
+        autocomplete: 'off',
         value: state.draft,
         onInput: (e) => store.setState({ draft: e.target.value }),
       }),
