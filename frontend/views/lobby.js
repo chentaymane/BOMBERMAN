@@ -1,6 +1,7 @@
 import { h } from '../framework/index.js'
 import { send } from '../socket.js'
 import { CHARACTERS } from '../data/characters.js'
+import { soundButton } from './sound.js'
 
 // Pick a character: locked ones are disabled, mine is marked as picked.
 // A pick that just became impossible is refused by the server with an error.
@@ -74,6 +75,7 @@ export function lobbyView(state) {
       h('div', { class: 'progress-bar', style: { transform: `scaleX(${left / (total || 1)})` } }),
     ),
     pickerView(state),
+    soundButton(state),
     state.error && h('p', { class: 'error', role: 'alert' }, state.error),
   )
 }

@@ -1,7 +1,7 @@
 import { h } from '../framework/index.js'
 import { CHARACTERS } from '../data/characters.js'
 import { tilesView } from '../game/tiles.js'
-import { toggleSound } from '../game/media.js'
+import { soundButton } from './sound.js'
 
 // Last drawn position of each player, to spot a respawn (a jump of more than one cell)
 const lastPositions = {}
@@ -109,10 +109,7 @@ export function gameView(state) {
     ),
     h('div', { class: 'game-footer' },
       controlsHint,
-      h('button', {
-        type: 'button', class: 'sound-toggle', onClick: toggleSound,
-        'aria-label': 'Game sound', 'aria-pressed': state.soundEnabled ? 'true' : 'false',
-      }, state.soundEnabled ? 'Sound: on' : 'Sound: off'),
+      soundButton(state),
       h('span', { class: 'fps', title: 'Frames per second' }, state.fps + ' FPS'),
     ),
   )
