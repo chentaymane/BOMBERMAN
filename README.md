@@ -3,8 +3,8 @@
 A browser-based multiplayer Bomberman game for 2 to 4 players. Destroy blocks,
 collect power-ups and survive until you are the last player standing.
 
-The interface uses our custom [mini-framework](frontend/framework/), reusable
-browser [extensions](frontend/lib/), DOM elements and CSS. There is no canvas, WebGL or third-party UI framework. The Node.js
+The interface uses our custom [mini-framework](frontend/framework/) plus two tiny
+helpers in [lib/](frontend/lib/) (WebSocket and sound), DOM elements and CSS. There is no canvas, WebGL or third-party UI framework. The Node.js
 server uses [ws](https://github.com/websockets/ws) for real-time communication.
 
 ## Run locally
@@ -24,7 +24,7 @@ Set the `PORT` environment variable to change the listening port.
 ## Join a game
 
 1. Enter a unique nickname.
-2. Choose one of nine characters in the waiting room. Taken characters are locked.
+2. Choose one of twelve characters in the waiting room. Taken characters are locked.
 3. Chat with the other players while waiting for the round to start.
 
 When the second player joins, a 20-second wait starts, followed by a 10-second
@@ -42,7 +42,7 @@ immediately. Each player starts in a different corner with three lives.
 
 ## Game rules
 
-- The fixed 15 ? 13 map contains permanent walls and randomly placed destructible blocks.
+- The fixed 15 × 13 map contains permanent walls and randomly placed destructible blocks.
 - Starting corners have clear escape routes. The board scales to the viewport.
 - Bombs explode after three seconds. Flames extend in four directions and stop
   at walls, blocks and other bombs. Bombs do not trigger chain reactions.
@@ -71,9 +71,10 @@ Each character has a folder under `frontend/assets/characters/`:
 ```text
 frontend/assets/characters/allal/
   player.webp
-  intro.mp3
-  death.mp3
-  win.mp3
+  intro.mp3    every time you get or pick this character
+  damage.mp3   this character loses a life
+  kill.mp3     this character loses its last life
+  win.mp3      this character wins the round
 ```
 
 The roster in [characters.js](frontend/data/characters.js) is the single source
@@ -83,12 +84,9 @@ of character names and folder names:
 { name: 'Allal', folder: 'allal' }
 ```
 
-Images and five intro recordings are provided. Add recordings as `intro.mp3`,
-`death.mp3` and `win.mp3` in each folder. Missing audio stays silent.
-Intros play once per character for the local player in each page session,
-when the server assigns or confirms their selection. Death recordings play on life loss;
-victory recordings play once when a winner is announced. Forfeits are silent.
-See the [asset guide](frontend/assets/README.md) for the complete layout.
+Drop a file in the folder to enable it; missing audio stays silent and forfeits
+are silent. The sound button (waiting room and game) mutes everything.
+See [SOUNDS.md](frontend/data/SOUNDS.md) for details.
 
 ## Project structure
 
@@ -110,8 +108,7 @@ frontend/
   game/           keyboard controls, cached tiles and media loading/playback
   styles/         styles grouped by purpose
   framework/      custom framework core (unchanged)
-  lib/            reusable browser extensions (socket, batched store, audio, images)
-  allal/          original character PNG artwork
+  lib/            small helpers outside the framework (socket.js, sound.js)
 ```
 
 ## Architecture and performance
@@ -125,10 +122,13 @@ tiles reuse virtual nodes, and player animation uses CSS transforms. The FPS
 counter provides a live indication of rendering frequency. The target is at
 least 60 FPS; actual performance depends on the device and browser.
 
-- [Architecture and module responsibilities](ARCHITECTURE.md)
+Paint and layers are kept low on purpose: the map has its own layer, so a bomb or a
+flame repaints only the map; players move with `transform` on their own layers;
+the only looping animations (ticking bomb, blinking after a hit) are
+transform/opacity animations that run on the compositor.
+
 - [WebSocket API](backend/API.md)
-- [Framework extension APIs](frontend/lib/EXTENSIONS.md)
-- [Performance notes](PERFORMANCE.md)
+- [Character sounds](frontend/data/SOUNDS.md)
 
 ## Authors
 
