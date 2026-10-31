@@ -6,23 +6,26 @@ const {
 } = require('./config')
 const state = require('./state')
 const { findPlayer, inside, bombAt, isPowerUp, getMoveDelay } = require('./helpers')
-// move = 'up' | 'down' | 'left' | 'right'
+// move = 'up' | 'down' | 'left' | 'right' when an arrow key goes down, null when released.
+// A press always gives exactly one step (pendingMove), even a very short tap.
+// Holding the key keeps walking (heldMove), one step each time the cooldown ends.
 function queueMove(client, move) {
   const player = findPlayer(client)
-  if (state.phase !== 'playing' || !player || player.lives <= 0 || typeof move !== 'string') return
-  if (Object.hasOwn(DIRECTIONS, move)) player.wantedMove = move // last wish wins
+  if (state.phase !== 'playing' || !player || player.lives <= 0) return
+  if (move === null) player.heldMove = null
+  else if (typeof move === 'string' && Object.hasOwn(DIRECTIONS, move)) {
+    player.heldMove = move
+    player.pendingMove = move
+  }
 }
 
-// Called by the loop: play the stored wishes of every living player
+// Called by the loop: one step for every player whose cooldown is over
 function applyMoves(now) {
   for (const player of state.players) {
-    if (player.lives <= 0) continue
-
-    // Too soon after the last move: keep the wish, try again next tick
-    if (player.wantedMove && now >= player.nextMoveAt) {
-      tryMove(player, DIRECTIONS[player.wantedMove], now)
-      player.wantedMove = null
-    }
+    const move = player.pendingMove || player.heldMove
+    if (player.lives <= 0 || !move || now < player.nextMoveAt) continue
+    player.pendingMove = null
+    tryMove(player, DIRECTIONS[move], now)
   }
 }
 

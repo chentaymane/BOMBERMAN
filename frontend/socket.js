@@ -1,6 +1,6 @@
 import { createSocket } from './lib/socket.js'
 import { store, initialState } from './store.js'
-import { playIntro, playHitSounds, playWinSound } from './game/media.js'
+import { playIntro } from './game/media.js'
 
 const MAX_CHAT_MESSAGES = 50
 let nextChatId = 0
@@ -26,7 +26,6 @@ const handlers = {
   },
 
   state(message) {
-    playHitSounds(store.getState().game, message)
     store.setState({ screen: 'game', game: message })
   },
 
@@ -38,8 +37,6 @@ const handlers = {
   },
 
   over(message) {
-    const state = store.getState()
-    if (!state.over) playWinSound(state.game ?? state.lobby, message.winner)
     store.setState({ over: true, winner: message.winner })
   },
 }

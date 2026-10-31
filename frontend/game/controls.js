@@ -5,21 +5,28 @@ import { send } from '../socket.js'
 const KEY_MOVES = {
   ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
 }
-const INPUT_REPEAT_MS = 50
 
-// Last pressed direction takes priority when several arrow keys are held.
-let heldMoves = []
-let lastSentAt = 0
+// Arrow keys held right now, the last pressed one wins.
+// The server moves one step per press and keeps walking while a key is held,
+// so we only tell it when the wanted direction changes (never repeat ourselves).
+let held = []
 
-function clearHeldMoves() {
-  heldMoves = []
+function update(next) {
+  const before = held.at(-1) ?? null
+  held = next
+  const after = held.at(-1) ?? null
+  if (after !== before) send({ type: 'move', move: after })
+}
+
+function releaseAll() {
+  if (held.length) update([])
 }
 
 function isTyping(element) {
   return element?.tagName === 'INPUT' || element?.tagName === 'TEXTAREA' || element?.isContentEditable === true
 }
 
-// Space must keep activating a focused button/link instead of dropping a bomb.
+// Space must keep activating a focused button instead of dropping a bomb.
 function isButtonLike(element) {
   const tag = element?.tagName
   return tag === 'BUTTON' || tag === 'A' || tag === 'SELECT'
@@ -34,11 +41,7 @@ function canPlay() {
 }
 
 function handleKeyDown(event) {
-  if (event.key === 'Escape' && isTyping(event.target)) {
-    event.target.blur()
-    return
-  }
-
+  if (event.key === 'Escape' && isTyping(event.target)) return event.target.blur()
   // Leave browser shortcuts (tab switching, page navigation...) untouched.
   if (event.altKey || event.ctrlKey || event.metaKey) return
 
@@ -47,44 +50,20 @@ function handleKeyDown(event) {
   if ((!move && !placing) || isTyping(event.target) || !canPlay()) return
   if (placing && isButtonLike(event.target)) return
   event.preventDefault()
-  if (event.repeat) return
+  if (event.repeat) return // the keyboard's own repeat is ignored
 
-  if (placing) {
-    send({ type: 'place' })
-    return
-  }
+  if (placing) send({ type: 'place' })
+  else update(held.filter(key => key !== move).concat(move))
+}
 
-  send({ type: 'move', move })
-  heldMoves = heldMoves.filter(held => held !== move).concat(move)
-  lastSentAt = performance.now()
+function handleKeyUp(event) {
+  const move = KEY_MOVES[event.key]
+  if (move) update(held.filter(key => key !== move))
 }
 
 export function startControls() {
-  const unsubscribe = [
-    on(document, 'keydown', handleKeyDown),
-    on(document, 'keyup', event => {
-      heldMoves = heldMoves.filter(move => move !== KEY_MOVES[event.key])
-    }),
-    on(document, 'focusin', event => {
-      if (isTyping(event.target)) clearHeldMoves()
-    }),
-    on(window, 'blur', clearHeldMoves),
-  ]
-
-  return () => {
-    unsubscribe.forEach(stop => stop())
-    clearHeldMoves()
-  }
-}
-
-export function repeatMove(now) {
-  if (!canPlay() || isTyping(document.activeElement)) {
-    clearHeldMoves()
-    return
-  }
-
-  const move = heldMoves.at(-1)
-  if (!move || now - lastSentAt < INPUT_REPEAT_MS) return
-  send({ type: 'move', move })
-  lastSentAt = now
+  on(document, 'keydown', handleKeyDown)
+  on(document, 'keyup', handleKeyUp)
+  on(document, 'focusin', event => { if (isTyping(event.target)) releaseAll() })
+  on(window, 'blur', releaseAll)
 }

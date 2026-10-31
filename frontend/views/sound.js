@@ -6,5 +6,5 @@ export function soundButton(state) {
   return h('button', {
     type: 'button', class: 'sound-toggle', onClick: toggleSound,
     'aria-label': 'Game sound', 'aria-pressed': state.soundEnabled ? 'true' : 'false',
-  }, state.soundEnabled ? '🔊 Sound: on' : '🔇 Sound: off')
+  }, state.soundEnabled ? 'Sound: on' : 'Sound: off')
 }

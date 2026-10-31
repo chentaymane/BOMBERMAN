@@ -1,5 +1,5 @@
 // Character IDs are the roster index + 1 (keep CHARACTERS in backend/game/config.js in sync). Names, images and sounds all derive here.
-// Each folder in assets/characters/ holds: player.webp, intro.mp3, damage.mp3, kill.mp3, win.mp3
+// Each folder in assets/characters/ holds player.webp and intro.mp3
 const roster = [
   { name: 'Allal', folder: 'allal' },
   { name: 'Chinwi', folder: 'chinwi' },
@@ -22,12 +22,7 @@ export const CHARACTERS = roster.map((character, index) => {
     ...character,
     id: index + 1,
     image,
-    sounds: {
-      intro: file('intro.mp3'),
-      damage: file('damage.mp3'),
-      kill: file('kill.mp3'),
-      win: file('win.mp3'),
-    },
+    intro: file('intro.mp3'),
     style: { '--character-image': `url("${image}")` },
   }
 })

@@ -115,7 +115,8 @@ function startGame() {
     player.totalPups = 0 // total collected power-ups (bombs+flames+speed)
     player.nextMoveAt = 0
     player.safeUntil = 0
-    player.wantedMove = null
+    player.heldMove = null
+    player.pendingMove = null
     player.wantsBomb = false
   })
 }
