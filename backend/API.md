@@ -39,7 +39,7 @@ send({ type: 'join', name: 'bob', character: 2 }) // a wanted one
 
 - Name: 1–15 characters. Only letters, numbers, spaces, `_` and `-` are allowed.
 - Names must be unique, ignoring case (`Bob` and `bob` are the same).
-- Character: a number from 1 to 9 (the roster in `frontend/data/characters.js`, with optimized pictures in `frontend/allal/optimized`). Two players can not pick the same one.
+- Character: a number from 1 to 12 (the roster in `frontend/data/characters.js`, pictures and sounds in `frontend/assets/characters/`). Two players can not pick the same one.
 - **Without a character you get a random free one right away** (any invalid value also means "no choice"). The assigned character is in the answer (`joined`) and can be changed in the waiting room.
 - Joining only works while players are waiting (lobby or countdown), with a maximum of 4 players.
 
@@ -167,7 +167,7 @@ Sent while the game runs, only when something changed.
 | field   | meaning                                                       |
 |---------|---------------------------------------------------------------|
 | `id`    | number shown in the map (`1`–`4`), also gives the start corner |
-| `character` | picked character (1–9)                                   |
+| `character` | picked character (1–12)                                  |
 | `x`,`y` | position (same as in the map)                                 |
 | `lives` | lives left (starts at 3, `0` = dead and removed from the map) |
 | `forfeited` | `true` when an alive player lost their connection during the match; show "Forfeit" instead of "Out" |
