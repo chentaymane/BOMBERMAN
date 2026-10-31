@@ -15,6 +15,7 @@ const FIRE_TIME = 500 // flames stay (ms)
 const SAFE_TIME = 2000 // invincible after losing a life (ms)
 const MOVE_DELAY = 200 // ms between two moves of a player, speed power ups shorten it
 const SPEED_STEP = 30 // each speed power up removes this from MOVE_DELAY
+const HOLD_DELAY = 300 // a key must stay down this long before the player keeps walking
 const MAX_BOMBS = 8
 const MAX_RANGE = 8
 const MAX_SPEED = 4
@@ -52,7 +53,7 @@ const DIRECTIONS = {
 
 module.exports = {
   WIDTH, HEIGHT, LIVES, MAX_PLAYERS, TICK, WAIT_TIME, READY_TIME, OVER_TIME,
-  BOMB_TIME, FIRE_TIME, SAFE_TIME, MOVE_DELAY, SPEED_STEP, MAX_BOMBS, MAX_RANGE,
+  BOMB_TIME, FIRE_TIME, SAFE_TIME, MOVE_DELAY, SPEED_STEP, HOLD_DELAY, MAX_BOMBS, MAX_RANGE,
   MAX_SPEED, MAX_POWERUPS, CHAT_DELAY, NAME_RULE, CHARACTERS,
   EMPTY, WALL, BLOCK, BOMB, FIRE, POWER_BOMB, POWER_FLAME, POWER_SPEED,
   CORNERS, DIRECTIONS,

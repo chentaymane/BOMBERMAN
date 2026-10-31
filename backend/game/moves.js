@@ -1,19 +1,21 @@
 // Movement input. queueMove stores a direction; the loop applies it with applyMoves,
 // checked against the real map. So a player can never cheat with a position.
 const {
-  DIRECTIONS, WALL, BLOCK, EMPTY,
+  DIRECTIONS, WALL, BLOCK, EMPTY, HOLD_DELAY,
   MAX_POWERUPS, MAX_BOMBS, MAX_RANGE, MAX_SPEED, POWER_BOMB, POWER_FLAME, POWER_SPEED,
 } = require('./config')
 const state = require('./state')
 const { findPlayer, inside, bombAt, isPowerUp, getMoveDelay } = require('./helpers')
 // move = 'up' | 'down' | 'left' | 'right' when an arrow key goes down, null when released.
-// A press always gives exactly one step (pendingMove), even a very short tap.
-// Holding the key keeps walking (heldMove), one step each time the cooldown ends.
+// One press = exactly one step (pendingMove), however long the tap lasts.
+// Still held after HOLD_DELAY: the player keeps walking in line (heldMove),
+// one step each time the cooldown ends, like a keyboard's own key repeat.
 function queueMove(client, move) {
   const player = findPlayer(client)
   if (state.phase !== 'playing' || !player || player.lives <= 0) return
   if (move === null) player.heldMove = null
   else if (typeof move === 'string' && Object.hasOwn(DIRECTIONS, move)) {
+    if (move !== player.heldMove) player.walkFrom = Date.now() + HOLD_DELAY
     player.heldMove = move
     player.pendingMove = move
   }
@@ -22,7 +24,8 @@ function queueMove(client, move) {
 // Called by the loop: one step for every player whose cooldown is over
 function applyMoves(now) {
   for (const player of state.players) {
-    const move = player.pendingMove || player.heldMove
+    const walking = player.heldMove && now >= player.walkFrom
+    const move = player.pendingMove || (walking ? player.heldMove : null)
     if (player.lives <= 0 || !move || now < player.nextMoveAt) continue
     player.pendingMove = null
     tryMove(player, DIRECTIONS[move], now)
