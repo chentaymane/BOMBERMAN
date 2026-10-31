@@ -1,26 +1,33 @@
-// Character IDs are the roster index + 1. Names, images and MP3s all derive here.
+// Character IDs are the roster index + 1 (keep CHARACTERS in backend/game/config.js in sync). Names, images and sounds all derive here.
+// Each folder in assets/characters/ holds: player.webp, intro.mp3, damage.mp3, kill.mp3, win.mp3
 const roster = [
   { name: 'Allal', folder: 'allal' },
+  { name: 'Chinwi', folder: 'chinwi' },
   { name: 'Bualam', folder: 'bualam' },
   { name: 'Cheb Larbi', folder: 'cheb-larbi' },
   { name: 'Driss', folder: 'driss' },
+  { name: 'Messi', folder: 'messi' },
   { name: 'Mmi Na3ima', folder: 'mmi-na3ima' },
   { name: 'Niba', folder: 'niba' },
   { name: 'Nizar', folder: 'nizar' },
+  { name: 'Playza', folder: 'playza' },
   { name: 'San Du Khan', folder: 'san-du-khan' },
   { name: 'Wldchinwya', folder: 'wldchinwya' },
 ]
 
 export const CHARACTERS = roster.map((character, index) => {
-  const folder = new URL(`../assets/characters/${character.folder}/`, import.meta.url)
-  const image = new URL('player.webp', folder).href
+  const file = name => new URL(`../assets/characters/${character.folder}/${name}`, import.meta.url).href
+  const image = file('player.webp')
   return {
     ...character,
     id: index + 1,
     image,
-    deathSound: new URL('death.mp3', folder).href,
-    winSound: new URL('win.mp3', folder).href,
-    introSound: new URL('intro.mp3', folder).href,
+    sounds: {
+      intro: file('intro.mp3'),
+      damage: file('damage.mp3'),
+      kill: file('kill.mp3'),
+      win: file('win.mp3'),
+    },
     style: { '--character-image': `url("${image}")` },
   }
 })

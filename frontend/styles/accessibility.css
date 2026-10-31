@@ -7,8 +7,6 @@
 
   .logo,
   .bomb::after,
-  .power::after,
-  .fire,
   .overlay,
   .result {
     animation: none;

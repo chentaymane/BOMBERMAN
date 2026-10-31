@@ -6,7 +6,7 @@ import { loginView } from './views/login.js'
 import { lobbyView } from './views/lobby.js'
 import { gameView } from './views/game.js'
 import { chatView } from './views/chat.js'
-import { loadCharacters, startSounds } from './game/media.js'
+import { loadCharacters } from './game/media.js'
 
 function appView(state) {
   if (state.screen === 'login') return loginView(state)
@@ -17,7 +17,6 @@ function appView(state) {
 
 mount(appView, document.getElementById('app'), store)
 startControls()
-startSounds()
 connect()
 loadCharacters()
 

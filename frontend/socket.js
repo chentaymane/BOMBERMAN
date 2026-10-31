@@ -1,84 +1,61 @@
-import { createJsonSocket } from './lib/websocket.js'
-import { store } from './store.js'
-import { playDeathSounds, playIntroSound, playWinSound } from './game/media.js'
+import { createSocket } from './lib/socket.js'
+import { store, initialState } from './store.js'
+import { playIntro, playHitSounds, playWinSound } from './game/media.js'
 
 const MAX_CHAT_MESSAGES = 50
 let nextChatId = 0
 
-// The store combines incoming changes; the animation loop renders only once
-// per frame even when several messages arrive together.
-export function handleServerMessage(message) {
-  if (!message || typeof message.type !== 'string') return
-  switch (message.type) {
-    case 'joined': {
-      store.setState(state => ({
-        screen: state.screen === 'login' ? 'lobby' : state.screen,
-        me: message.name,
-        error: '',
-      }))
-      playIntroSound(message)
-      break
-    }
-    case 'error':
-      store.setState({ error: message.message })
-      break
-    case 'lobby':
-      store.setState({
-        screen: 'lobby', lobby: message, game: null,
-        over: false, winner: null, error: '',
-      })
-      break
-    case 'state':
-      playDeathSounds(store.getState().game, message)
-      store.setState({ screen: 'game', game: message })
-      break
-    case 'chat':
-      store.setState(state => ({
-        messages: [
-          { id: ++nextChatId, from: message.from, text: message.text },
-          ...state.messages,
-        ].slice(0, MAX_CHAT_MESSAGES),
-      }))
-      break
-    case 'over':
-      if (!store.getState().over) {
-        const state = store.getState()
-        playWinSound(state.game ?? state.lobby, message.winner)
-      }
-      store.setState({ over: true, winner: message.winner })
-      break
-  }
+// One handler per server message type (see backend/API.md)
+const handlers = {
+  // Sent on join and on every successful pick
+  joined(message) {
+    store.setState(state => ({
+      screen: state.screen === 'login' ? 'lobby' : state.screen,
+      me: message.name,
+      error: '',
+    }))
+    playIntro(message.character)
+  },
+
+  error(message) {
+    store.setState({ error: message.message })
+  },
+
+  lobby(message) {
+    store.setState({ screen: 'lobby', lobby: message, game: null, over: false, winner: null, error: '' })
+  },
+
+  state(message) {
+    playHitSounds(store.getState().game, message)
+    store.setState({ screen: 'game', game: message })
+  },
+
+  chat(message) {
+    store.setState(state => ({
+      messages: [{ id: ++nextChatId, from: message.from, text: message.text }, ...state.messages]
+        .slice(0, MAX_CHAT_MESSAGES),
+    }))
+  },
+
+  over(message) {
+    const state = store.getState()
+    if (!state.over) playWinSound(state.game ?? state.lobby, message.winner)
+    store.setState({ over: true, winner: message.winner })
+  },
 }
 
-function handleDisconnect() {
-  // Drop everything that belongs to the closed session. The nickname is kept so
-  // the player can retry without typing it again.
-  store.setState({
-    connected: false,
-    screen: 'login',
-    me: '',
-    game: null,
-    over: false,
-    winner: null,
-    lobby: {
-      players: [], taken: [],
-      maxPlayers: 4, waitDuration: 20, readyDuration: 10,
-      waitSeconds: null, countdown: null,
-    },
-    messages: [],
-    draft: '',
-    error: "Connection lost. Retry, or start the backend and retry again.",
-  })
-}
+const socket = createSocket({
+  onOpen: () => store.setState({ connected: true, error: '' }),
+  onMessage: message => handlers[message?.type]?.(message),
+  // Drop the closed session, but keep the nickname and settings for a retry.
+  onClose: () => store.setState(state => ({
+    ...initialState,
+    name: state.name,
+    charactersStatus: state.charactersStatus,
+    soundEnabled: state.soundEnabled,
+    error: 'Connection lost. Retry, or start the backend and retry again.',
+  })),
+})
 
-const socket = createJsonSocket()
-
+export const connect = socket.connect
 export const send = socket.send
-
-export function connect() {
-  return socket.connect({
-    onMessage: handleServerMessage,
-    onOpen: () => store.setState({ connected: true, error: '' }),
-    onClose: handleDisconnect,
-  })
-}

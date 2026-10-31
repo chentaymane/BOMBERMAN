@@ -86,6 +86,8 @@
 }
 
 .tiles {
+  /* Own layer: a bomb or a flame repaints only the map, never the rest of the page */
+  will-change: transform;
   display: grid;
   grid-template-columns: repeat(var(--columns), var(--cell));
   background: url(../assets/textures/floor.svg) 0 0 / calc(var(--cell) * 2) calc(var(--cell) * 2);
@@ -117,7 +119,6 @@
 /* Explosion: a cross of fire made of a center and arms that join their neighbors */
 .fire {
   --band: transparent 14%, #e8401c 16%, #ff9a1f 28%, #ffe45c 40%, #fff 50%, #ffe45c 60%, #ff9a1f 72%, #e8401c 84%, transparent 86%;
-  animation: burst 0.2s ease-out;
 }
 
 .fire.h {
@@ -130,13 +131,6 @@
 
 .fire.c {
   background-image: radial-gradient(circle, #fff 20%, transparent 45%), linear-gradient(var(--band)), linear-gradient(90deg, var(--band));
-}
-
-@keyframes burst {
-  from {
-    transform: scale(0.6);
-    opacity: 0.6;
-  }
 }
 
 /* Bomb: ticks until it explodes */
@@ -164,7 +158,6 @@
   display: grid;
   place-items: center;
   font-size: calc(var(--cell) * 0.42);
-  animation: bob 0.6s ease-in-out infinite alternate;
 }
 
 .power-bomb::after {
@@ -180,12 +173,6 @@
 .power-speed::after {
   content: '⚡';
   background: linear-gradient(#3ee08f, #13a35e);
-}
-
-@keyframes bob {
-  to {
-    transform: translateY(-3px);
-  }
 }
 
 /* Players: moved with transform only, so the browser does not re-layout.
@@ -340,6 +327,7 @@ kbd {
 }
 
 .sound-toggle {
+  align-self: center; /* stays small inside the waiting room card */
   padding: 0 12px;
   font-size: 0.8125rem;
 }
