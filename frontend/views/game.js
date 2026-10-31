@@ -43,13 +43,14 @@ function chipView(player, me) {
         alive
           ? h('span', {
             class: 'hearts', role: 'img', 'aria-label': player.lives + ' lives',
-          }, '❤️'.repeat(player.lives))
-          : h('span', { class: 'hearts' }, player.forfeited ? 'Forfeit' : 'Out'),
+            style: { '--lives': player.lives },
+          })
+          : h('span', { class: 'out-label' }, player.forfeited ? 'Forfeit' : 'Out'),
       ),
       alive && h('span', { class: 'stats', role: 'img', 'aria-label': info, title: info },
-        h('span', {}, '💣 ' + player.bombs),
-        h('span', {}, '🔥 ' + player.range),
-        h('span', {}, '⚡ ' + player.speed),
+        h('span', { class: 'stat stat-bomb' }, player.bombs),
+        h('span', { class: 'stat stat-flame' }, player.range),
+        h('span', { class: 'stat stat-speed' }, player.speed),
       ),
     ),
   )
@@ -57,7 +58,7 @@ function chipView(player, me) {
 
 // Never changes, so it is built once and the framework always skips it
 const controlsHint = h('p', { class: 'hint' },
-  h('span', {}, h('kbd', {}, '← ↑ → ↓'), 'Move (hold to keep moving)'),
+  h('span', {}, h('kbd', {}, 'Arrows'), 'Move (hold to keep moving)'),
   h('span', {}, h('kbd', {}, 'Space'), 'Drop a bomb'),
   h('span', {}, h('kbd', {}, 'Esc'), 'Leave the chat'),
 )
@@ -110,7 +111,6 @@ export function gameView(state) {
     h('div', { class: 'game-footer' },
       controlsHint,
       soundButton(state),
-      h('span', { class: 'fps', title: 'Frames per second' }, state.fps + ' FPS'),
     ),
   )
 }
